@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_home"
+            android:icon="@drawable/ic_home"
+            android:title="@string/menu_home" />
+        <item
+            android:id="@+id/nav_communicate"
+            android:icon="@drawable/ic_chat_bubble"
+            android:title="@string/menu_communicate" />
+        <item
+            android:id="@+id/nav_alerts"
+            android:icon="@drawable/ic_notifications"
+            android:title="@string/menu_alerts" />
+        <item
+            android:id="@+id/nav_map"
+            android:icon="@drawable/ic_map"
+            android:title="@string/menu_map" />
+        <item
+            android:id="@+id/nav_nfc"
+            android:icon="@drawable/ic_nfc"
+            android:title="@string/menu_nfc" />
+        <item
+            android:id="@+id/nav_contacts"
+            android:icon="@drawable/ic_people"
+            android:title="@string/menu_contacts" />
+    </group>
+
+    <item android:title="@string/menu_others">
+        <menu>
+            <item
+                android:id="@+id/nav_settings"
+                android:icon="@drawable/ic_settings"
+                android:title="@string/menu_settings" />
+            <item
+                android:id="@+id/nav_logout"
+                android:icon="@drawable/ic_exit_to_app"
+                android:title="@string/menu_logout" />
+        </menu>
+    </item>
+</menu>

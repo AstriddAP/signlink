@@ -1,0 +1,15 @@
+*.iml
+.gradle
+/local.properties
+/.idea/
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Secretos de Firebase y Google Cloud
+google-services.json
+app/src/main/res/raw/google_credentials.json
+google_credentials.json

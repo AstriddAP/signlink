@@ -1,0 +1,18 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+    <!-- White rounded square -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M20,0 L100,0 A20,20 0 0 1 120,20 L120,100 A20,20 0 0 1 100,120 L20,120 A20,20 0 0 1 0,100 L0,20 A20,20 0 0 1 20,0 Z" />
+    <!-- Hand Icon (approx) -->
+    <path
+        android:fillColor="#1539A1"
+        android:pathData="M85,55 C85,50 81,46 76,46 C75,46 74,46 73,47 L73,42 C73,37 69,33 64,33 C63,33 62,33 61,34 L61,31 C61,26 57,22 52,22 C47,22 43,26 43,31 L43,58 C41,56 38,55 35,55 C31,55 27,59 27,64 L27,85 C27,96 36,105 47,105 L73,105 C84,105 93,96 93,85 L93,63 C93,58 89,55 85,55 Z" />
+    <!-- Speaker/Voice waves (approx) -->
+    <path
+        android:fillColor="#00D09C"
+        android:pathData="M25,45 L15,45 L15,75 L25,75 L40,90 L40,30 Z" />
+</vector>

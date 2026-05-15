@@ -1,0 +1,52 @@
+<resources>
+    <string name="app_name">SignLink</string>
+    <string name="slogan">Conectando sin barreras</string>
+    <string name="accessibility_footer">Accesibilidad para todos</string>
+    <string name="welcome_title">Bienvenido</string>
+    <string name="welcome_subtitle">Inicia sesión para continuar</string>
+    <string name="email_label">Correo electrónico</string>
+    <string name="password_label">Contraseña</string>
+    <string name="login_button">Iniciar Sesión</string>
+    <string name="or_continue_with">o continúa con</string>
+
+    <string name="hello_user">Hola, %1$s</string>
+    <string name="mode_deaf">Modo: Discapacidad Auditiva</string>
+    <string name="mode_mute">Modo: Discapacidad del Habla</string>
+    <string name="panic_button_title">BOTÓN DE PÁNICO</string>
+    <string name="panic_button_subtitle">Presiona para enviar\nalerta de emergencia</string>
+
+    <string name="menu_home">Inicio</string>
+    <string name="menu_communicate">Comunicar</string>
+    <string name="menu_alerts">Alertas</string>
+    <string name="menu_map">Mapa</string>
+    <string name="menu_nfc">NFC</string>
+    <string name="menu_contacts">Contactos</string>
+    <string name="menu_settings">Ajustes</string>
+    <string name="menu_logout">Cerrar Sesión</string>
+    <string name="menu_others">Otros</string>
+
+    <string name="alerts_title">Alertas</string>
+    <string name="alerts_count">%1$d nuevas</string>
+    <string name="chat_title">Chat</string>
+    <string name="location_title">Ubicación</string>
+    <string name="location_subtitle">Compartir GPS</string>
+    <string name="captions_title">Subtítulos</string>
+    <string name="captions_subtitle">En vivo</string>
+
+    <string name="recent_alerts">Alertas Recientes</string>
+    <string name="recent_phrases">Frases Recientes</string>
+    <string name="alert_door">Alguien en la puerta</string>
+    <string name="alert_message">Nuevo mensaje de %1$s</string>
+    <string name="time_5m">Hace 5 minutos</string>
+    <string name="time_15m">Hace 15 minutos</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">SignLink User</string>
+    <string name="nav_header_subtitle">user@signlink.com</string>
+    <string name="nav_header_desc">User profile picture</string>
+
+    <string name="hint_speak">Escribe algo para hablar...</string>
+    <string name="btn_speak_content_desc">Hablar texto escrito</string>
+    <string name="fab_symbols_content_desc">Abrir tablero completo de símbolos</string>
+</resources>
