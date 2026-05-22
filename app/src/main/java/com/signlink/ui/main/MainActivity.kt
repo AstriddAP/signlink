@@ -4,6 +4,7 @@ import android.content.pm.PackageManager
 import android.util.Log
 import android.os.Bundle
 import android.view.View
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
@@ -13,6 +14,7 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.signlink.R
 import com.signlink.databinding.ActivityMainBinding
+import com.signlink.ui.onboarding.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -20,6 +22,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var appBarConfiguration: AppBarConfiguration
+    private val authViewModel: AuthViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,6 +64,7 @@ class MainActivity : AppCompatActivity() {
             when (menuItem.itemId) {
                 R.id.nav_logout -> {
                     binding.drawerLayout.closeDrawers()
+                    authViewModel.logout()
                     // Logout logic: Navigate to login and clear stack
                     val navOptions = NavOptions.Builder()
                         .setPopUpTo(R.id.nav_graph, true)

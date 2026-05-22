@@ -1,7 +1,9 @@
 package com.signlink.util
 
 import com.signlink.BuildConfig
+import android.graphics.Bitmap
 import com.google.ai.client.generativeai.GenerativeModel
+import com.google.ai.client.generativeai.type.content
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -97,6 +99,29 @@ class GeminiManager @Inject constructor() {
             val response = model.generateContent(prompt)
             response.text
         } catch (e: Exception) {
+            null
+        }
+    }
+
+    suspend fun analyzeDocument(bitmap: Bitmap): String? = withContext(Dispatchers.IO) {
+        try {
+            val prompt = """
+                Analiza esta imagen de un documento (DNI, carnet, etc.).
+                1. Identifica qué documento es.
+                2. Extrae los datos principales (Nombre, fecha de vencimiento).
+                3. Explica de forma muy breve y sencilla qué contiene para que una persona pueda escucharlo.
+                Usa un tono amable y pausado.
+            """.trimIndent()
+
+            val inputContent = content {
+                image(bitmap)
+                text(prompt)
+            }
+
+            val response = model.generateContent(inputContent)
+            response.text
+        } catch (e: Exception) {
+            e.printStackTrace()
             null
         }
     }

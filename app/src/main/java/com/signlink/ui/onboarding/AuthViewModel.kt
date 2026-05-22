@@ -45,6 +45,10 @@ class AuthViewModel @Inject constructor(
 
     fun isUserLoggedIn() = authRepository.isUserLoggedIn()
 
+    fun logout() {
+        authRepository.logout()
+    }
+
     sealed class AuthState {
         object Idle : AuthState()
         object Loading : AuthState()

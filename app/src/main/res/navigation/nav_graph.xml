@@ -15,6 +15,11 @@
             app:destination="@id/loginFragment"
             app:popUpTo="@id/splashFragment"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_splash_to_home"
+            app:destination="@id/nav_home"
+            app:popUpTo="@id/splashFragment"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <fragment

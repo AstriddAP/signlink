@@ -1,8 +1,12 @@
 package com.signlink.ui.documents
 
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.provider.MediaStore
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -10,12 +14,14 @@ import androidx.core.content.FileProvider
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.signlink.R
 import com.signlink.data.local.entity.DocumentEntity
 import com.signlink.databinding.FragmentAddDocumentBinding
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -51,6 +57,10 @@ class AddDocumentFragment : Fragment(R.layout.fragment_add_document) {
                 binding.ivFront.setImageURI(it)
                 binding.ivFront.isVisible = true
                 binding.llAddFront.isVisible = false
+                
+                // Analizar el documento frontal con IA
+                val bitmap = uriToBitmap(it)
+                viewModel.analyzeAndSpeakDocument(bitmap)
             } else {
                 backImageUri = it
                 binding.ivBack.setImageURI(it)
@@ -60,11 +70,45 @@ class AddDocumentFragment : Fragment(R.layout.fragment_add_document) {
         }
     }
 
+    private fun uriToBitmap(uri: Uri): Bitmap {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val source = ImageDecoder.createSource(requireContext().contentResolver, uri)
+            ImageDecoder.decodeBitmap(source)
+        } else {
+            MediaStore.Images.Media.getBitmap(requireContext().contentResolver, uri)
+        }.copy(Bitmap.Config.ARGB_8888, true)
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentAddDocumentBinding.bind(view)
 
         setupListeners()
+        observeViewModel()
+    }
+
+    private fun observeViewModel() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.isAnalyzing.collect { isAnalyzing ->
+                if (isAnalyzing) {
+                    binding.cardIaResponse.isVisible = true
+                    binding.progressBar.isVisible = true
+                    binding.tvIaExplanation.text = "La IA está analizando tu documento..."
+                } else {
+                    binding.progressBar.isVisible = false
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.analysisResult.collect { result ->
+                if (result != null) {
+                    binding.cardIaResponse.isVisible = true
+                    binding.tvIaExplanation.text = result
+                    binding.btnListenIa.isVisible = true // Mostramos el botón cuando hay respuesta
+                }
+            }
+        }
     }
 
     private fun setupListeners() {
@@ -80,6 +124,10 @@ class AddDocumentFragment : Fragment(R.layout.fragment_add_document) {
 
         binding.btnSave.setOnClickListener {
             saveDocument()
+        }
+
+        binding.btnListenIa.setOnClickListener {
+            viewModel.speakCurrentAnalysis() // Llamamos a la función de voz
         }
     }
 
