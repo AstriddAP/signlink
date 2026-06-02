@@ -7,6 +7,11 @@
     <string name="email_label">Correo electrónico</string>
     <string name="password_label">Contraseña</string>
     <string name="login_button">Iniciar Sesión</string>
+    <string name="register_button">Registrarse</string>
+    <string name="register_title">Crear Cuenta</string>
+    <string name="register_subtitle">Regístrate para comenzar</string>
+    <string name="no_account">¿No tienes cuenta? Regístrate aquí</string>
+    <string name="already_have_account">¿Ya tienes cuenta? Inicia sesión aquí</string>
     <string name="or_continue_with">o continúa con</string>
 
     <string name="hello_user">Hola, %1$s</string>
@@ -46,7 +51,17 @@
     <string name="nav_header_subtitle">user@signlink.com</string>
     <string name="nav_header_desc">User profile picture</string>
 
+    <string name="settings_title">Ajustes de Perfil</string>
+    <string name="personal_info_section">Información Personal</string>
+    <string name="app_preferences_section">Preferencias de la App</string>
+    <string name="label_name">Nombre</string>
+    <string name="label_email">Correo electrónico</string>
+    <string name="label_dark_mode">Modo Oscuro</string>
+
     <string name="hint_speak">Escribe algo para hablar...</string>
     <string name="btn_speak_content_desc">Hablar texto escrito</string>
     <string name="fab_symbols_content_desc">Abrir tablero completo de símbolos</string>
+
+    <!-- Google Auth -->
+    <string name="default_web_client_id" translatable="false">295632983962-ltgf1bnooj3dfu1g4gn9v5ts4pst3s36.apps.googleusercontent.com</string>
 </resources>

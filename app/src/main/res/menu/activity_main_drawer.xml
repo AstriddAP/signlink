@@ -13,21 +13,9 @@
             android:icon="@drawable/ic_chat_bubble"
             android:title="@string/menu_communicate" />
         <item
-            android:id="@+id/nav_alerts"
-            android:icon="@drawable/ic_notifications"
-            android:title="@string/menu_alerts" />
-        <item
             android:id="@+id/nav_map"
             android:icon="@drawable/ic_map"
             android:title="@string/menu_map" />
-        <item
-            android:id="@+id/nav_nfc"
-            android:icon="@drawable/ic_nfc"
-            android:title="@string/menu_nfc" />
-        <item
-            android:id="@+id/nav_contacts"
-            android:icon="@drawable/ic_people"
-            android:title="@string/menu_contacts" />
     </group>
 
     <item android:title="@string/menu_others">

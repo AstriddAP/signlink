@@ -58,15 +58,16 @@
             app:layout_constraintTop_toBottomOf="@id/tv_document_title"
             tools:text="Añadido el 15/05/2026" />
 
-        <ImageView
-            android:id="@+id/iv_more"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@android:drawable/ic_menu_more"
+        <ImageButton
+            android:id="@+id/btn_delete_document"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_delete"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/on_surface_variant" />
+            app:tint="@color/panic_red" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.signlink.data.local.entity.DocumentEntity
 import com.signlink.data.repository.DocumentRepository
 import com.signlink.util.GeminiManager
-import com.signlink.util.TTSManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,8 +16,7 @@ import javax.inject.Inject
 @HiltViewModel
 class DocumentViewModel @Inject constructor(
     private val repository: DocumentRepository,
-    private val geminiManager: GeminiManager,
-    private val ttsManager: TTSManager
+    private val geminiManager: GeminiManager
 ) : ViewModel() {
 
     private val _documents = MutableStateFlow<List<DocumentEntity>>(emptyList())
@@ -63,32 +61,37 @@ class DocumentViewModel @Inject constructor(
         }
     }
 
-    fun analyzeAndSpeakDocument(bitmap: Bitmap) {
+    private val _dniData = MutableStateFlow<Map<String, String>?>(null)
+    val dniData = _dniData.asStateFlow()
+
+    fun analyzeDocument(bitmap: Bitmap) {
         viewModelScope.launch {
             _isAnalyzing.value = true
             _analysisResult.value = "La IA está analizando tu documento..."
-            ttsManager.speak("Analizando documento, por favor espera un momento.")
 
             val result = geminiManager.analyzeDocument(bitmap)
             _analysisResult.value = result
             _isAnalyzing.value = false
-
-            result?.let {
-                ttsManager.speak(it)
-            }
         }
     }
 
-    fun speakCurrentAnalysis() {
-        _analysisResult.value?.let { text ->
-            if (text != "La IA está analizando tu documento...") {
-                ttsManager.speak(text)
+    fun extractDniInfo(bitmap: Bitmap) {
+        viewModelScope.launch {
+            _isAnalyzing.value = true
+            val jsonResult = geminiManager.extractDniData(bitmap)
+            if (jsonResult != null) {
+                try {
+                    val map = com.google.gson.Gson().fromJson(jsonResult, Map::class.java) as Map<String, String>
+                    _dniData.value = map
+                } catch (e: Exception) {
+                    _dniData.value = null
+                }
             }
+            _isAnalyzing.value = false
         }
     }
 
     override fun onCleared() {
         super.onCleared()
-        ttsManager.stop()
     }
 }

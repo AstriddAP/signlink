@@ -129,17 +129,39 @@ class GeminiManager @Inject constructor() {
     suspend fun formatNumbersInText(text: String): String? = withContext(Dispatchers.IO) {
         try {
             val prompt = """
-                Tu tarea es identificar todos los números, precios, fechas o cantidades en el siguiente texto
-                y devolver el mismo texto pero resaltando esos números entre asteriscos (ej: *S/ 50.00*) 
-                o convirtiéndolos a cifras claras si están escritos en palabras (ej: "veinticinco" a *25*).
-                Esto es para ayudar a una persona con discapacidad auditiva a leer datos clave rápidamente.
-                
+                Identifica números, precios, fechas o cantidades en el texto.
+                Devuelve el texto resaltando los números entre asteriscos (ej: *S/ 50.00*).
                 Texto: $text
-                Resultado:
             """.trimIndent()
 
             val response = model.generateContent(prompt)
-            response.text
+            response.text // Esto es String?
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    suspend fun extractDniData(bitmap: Bitmap): String? = withContext(Dispatchers.IO) {
+        try {
+            val prompt = """
+                Analiza esta imagen de un DNI peruano y extrae la información en este formato JSON exacto:
+                {
+                  "nombres": "...",
+                  "apellidos": "...",
+                  "dni": "...",
+                  "direccion": "...",
+                  "fecha_nacimiento": "..."
+                }
+                Si no puedes leer un campo, pon "No detectado". No incluyas nada más que el JSON.
+            """.trimIndent()
+
+            val inputContent = content {
+                image(bitmap)
+                text(prompt)
+            }
+
+            val response = model.generateContent(inputContent)
+            response.text?.replace("```json", "")?.replace("```", "")?.trim()
         } catch (e: Exception) {
             null
         }

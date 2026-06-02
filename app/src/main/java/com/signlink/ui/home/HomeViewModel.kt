@@ -1,70 +1,47 @@
 package com.signlink.ui.home
 
-import android.annotation.SuppressLint
 import android.app.Application
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.signlink.R
-import com.signlink.data.repository.AlertRepository
+import com.google.firebase.auth.FirebaseAuth
+import com.signlink.data.model.User
+import com.signlink.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val application: Application,
-    private val alertRepository: AlertRepository
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
-    private val _panicState = MutableStateFlow<PanicState>(PanicState.Idle)
-    val panicState = _panicState.asStateFlow()
+    private val _userProfile = MutableLiveData<User?>()
+    val userProfile: LiveData<User?> = _userProfile
 
-    @SuppressLint("MissingPermission")
-    fun triggerPanicButton() {
-        _panicState.value = PanicState.Loading
+    init {
+        loadUserProfile()
+    }
 
-        viewModelScope.launch {
-            // Simulamos la obtención de ubicación y envío a Firestore
-            // para evitar crashes sin google-services.json ni API Keys
-            val result = alertRepository.createPanicAlert("mock_user", 0.0, 0.0)
-            
-            if (result.isSuccess) {
-                delay(1000) // Efecto visual de carga
-                showLocalNotification()
-                _panicState.value = PanicState.Success
-            } else {
-                _panicState.value = PanicState.Error("Error en la conexión")
+    fun loadUserProfile() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        if (uid != null) {
+            viewModelScope.launch {
+                userRepository.getUserProfile(uid).onSuccess {
+                    _userProfile.value = it
+                }.onFailure {
+                    // Si falla el remoto, al menos tenemos el local para la UI inmediata
+                    _userProfile.value = User(profileType = getLocalProfileType())
+                }
             }
+        } else {
+            _userProfile.value = User(profileType = getLocalProfileType())
         }
     }
 
-    @SuppressLint("MissingPermission")
-    private fun showLocalNotification() {
-        val channelId = "signlink_notifications"
-        val notification = NotificationCompat.Builder(application, channelId)
-            .setSmallIcon(R.drawable.ic_notifications)
-            .setContentTitle("¡Alerta de Pánico!")
-            .setContentText("Tu ubicación ha sido enviada a tus contactos de confianza.")
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setAutoCancel(true)
-            .build()
-
-        try {
-            NotificationManagerCompat.from(application).notify(1, notification)
-        } catch (e: Exception) {
-            // Ignorar errores de notificación en emuladores sin permisos
-        }
-    }
-
-    sealed class PanicState {
-        object Idle : PanicState()
-        object Loading : PanicState()
-        object Success : PanicState()
-        data class Error(val message: String) : PanicState()
+    fun getLocalProfileType(): String {
+        return userRepository.getLocalProfileType() ?: "auditivo"
     }
 }

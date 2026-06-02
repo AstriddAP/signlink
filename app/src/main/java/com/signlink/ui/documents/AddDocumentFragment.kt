@@ -60,7 +60,7 @@ class AddDocumentFragment : Fragment(R.layout.fragment_add_document) {
                 
                 // Analizar el documento frontal con IA
                 val bitmap = uriToBitmap(it)
-                viewModel.analyzeAndSpeakDocument(bitmap)
+                viewModel.analyzeDocument(bitmap)
             } else {
                 backImageUri = it
                 binding.ivBack.setImageURI(it)
@@ -105,7 +105,6 @@ class AddDocumentFragment : Fragment(R.layout.fragment_add_document) {
                 if (result != null) {
                     binding.cardIaResponse.isVisible = true
                     binding.tvIaExplanation.text = result
-                    binding.btnListenIa.isVisible = true // Mostramos el botón cuando hay respuesta
                 }
             }
         }
@@ -124,10 +123,6 @@ class AddDocumentFragment : Fragment(R.layout.fragment_add_document) {
 
         binding.btnSave.setOnClickListener {
             saveDocument()
-        }
-
-        binding.btnListenIa.setOnClickListener {
-            viewModel.speakCurrentAnalysis() // Llamamos a la función de voz
         }
     }
 

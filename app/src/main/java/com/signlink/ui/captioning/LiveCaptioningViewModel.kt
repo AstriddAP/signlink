@@ -2,18 +2,23 @@ package com.signlink.ui.captioning
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.signlink.data.repository.IAAnalysisRepository
 import com.signlink.data.repository.SpeechRecognitionRepository
 import com.signlink.util.GeminiManager
+import com.signlink.util.TTSManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import android.util.Log
 
 @HiltViewModel
 class LiveCaptioningViewModel @Inject constructor(
     private val speechRepository: SpeechRecognitionRepository,
-    private val geminiManager: GeminiManager
+    private val geminiManager: GeminiManager,
+    private val ttsManager: TTSManager,
+    private val iaRepository: IAAnalysisRepository
 ) : ViewModel() {
 
     private val _captions = MutableStateFlow<List<Caption>>(emptyList())
@@ -21,6 +26,15 @@ class LiveCaptioningViewModel @Inject constructor(
 
     private val _isRecording = MutableStateFlow(false)
     val isRecording = _isRecording.asStateFlow()
+
+    private val _isProcessingIA = MutableStateFlow(false)
+    val isProcessingIA = _isProcessingIA.asStateFlow()
+
+    private val _predictions = MutableStateFlow<List<com.signlink.data.remote.Prediction>>(emptyList())
+    val predictions = _predictions.asStateFlow()
+
+    var lastImageWidth = 0
+    var lastImageHeight = 0
 
     fun toggleRecording() {
         if (_isRecording.value) {
@@ -30,14 +44,56 @@ class LiveCaptioningViewModel @Inject constructor(
         }
     }
 
-    fun onVisualDetection(text: String) {
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage = _errorMessage.asStateFlow()
+
+    fun onVisualDetection(text: String, isError: Boolean = false) {
+        if (isError) {
+            _errorMessage.value = text
+            return
+        }
+        
+        _errorMessage.value = null // Limpiar error si hubo éxito
         val visualCaption = Caption(
             text = text,
             speaker = "LENS",
             color = "#00E5FF"
         )
+        // Evitar duplicados seguidos
         if (_captions.value.lastOrNull()?.text != text) {
             _captions.value = _captions.value.takeLast(20) + visualCaption
+            ttsManager.speak(text)
+        }
+    }
+
+    fun analizarImagenRemota(file: java.io.File, width: Int, height: Int) {
+        this.lastImageWidth = width
+        this.lastImageHeight = height
+        _isProcessingIA.value = true
+        _errorMessage.value = null 
+
+        viewModelScope.launch {
+            try {
+                iaRepository.analyzeImage(file).onSuccess { response ->
+                    val result = response.result
+                    val newPredictions = response.predictions ?: emptyList()
+                    _predictions.value = newPredictions
+
+                    if (!result.isNullOrBlank()) {
+                        onVisualDetection(result)
+                    }
+                }.onFailure { error ->
+                    _predictions.value = emptyList()
+                    val msg = when (error.message) {
+                        "LIMITE_ALCANZADO" -> "Cuota de IA agotada. Esperando..."
+                        "ERROR_SERVIDOR" -> "Servidor saturado. Reintentando..."
+                        else -> "Buscando conexión..."
+                    }
+                    onVisualDetection(msg, isError = true)
+                }
+            } finally {
+                _isProcessingIA.value = false
+            }
         }
     }
 
@@ -70,12 +126,13 @@ class LiveCaptioningViewModel @Inject constructor(
                     _captions.value = currentList.takeLast(30)
 
                     viewModelScope.launch {
-                        val formattedText = geminiManager.formatNumbersInText(transcriptText)
+                        // Forzamos el tipo String? explícitamente para evitar el error de 'Any'
+                        val formattedText: String? = geminiManager.formatNumbersInText(transcriptText)
                         if (formattedText != null) {
-                            // Reemplazamos el último mensaje por el formateado por IA
                             val updatedList = _captions.value.toMutableList()
                             val index = updatedList.indexOf(finalCaption)
                             if (index != -1) {
+                                // Ahora el compilador sabrá que formattedText es String
                                 updatedList[index] = finalCaption.copy(text = formattedText)
                                 _captions.value = updatedList
                             }

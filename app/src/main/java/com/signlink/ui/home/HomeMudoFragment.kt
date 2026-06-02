@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -26,6 +27,7 @@ class HomeMudoFragment : Fragment(R.layout.fragment_home_mudo), TextToSpeech.OnI
     private var _binding: FragmentHomeMudoBinding? = null
     private val binding get() = _binding!!
     
+    private val viewModel: HomeMudoViewModel by viewModels()
     private var tts: TextToSpeech? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -41,7 +43,8 @@ class HomeMudoFragment : Fragment(R.layout.fragment_home_mudo), TextToSpeech.OnI
     }
 
     private fun setupGreeting() {
-        binding.tvWelcomeMudo.text = getString(R.string.hello_user, "María")
+        val currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+        binding.tvWelcomeMudo.text = getString(R.string.hello_user, currentUser?.displayName ?: "Usuario")
     }
 
     private fun setupRecentPhrases() {

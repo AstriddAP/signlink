@@ -15,6 +15,32 @@ class SettingsFragment : Fragment(R.layout.fragment_settings) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentSettingsBinding.bind(view)
+
+        setupUserData()
+        setupListeners()
+    }
+
+    private fun setupUserData() {
+        val currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+        binding.etName.setText(currentUser?.displayName ?: "Usuario")
+        binding.etEmail.setText(currentUser?.email ?: "Sin correo")
+    }
+
+    private fun setupListeners() {
+        binding.switchDarkMode.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES)
+            } else {
+                androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO)
+            }
+        }
+
+        binding.tvLogout.setOnClickListener {
+            com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
+            // Regresar al inicio o al login
+            requireActivity().finish()
+            startActivity(requireActivity().intent)
+        }
     }
 
     override fun onDestroyView() {

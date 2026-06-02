@@ -12,7 +12,8 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class DocumentAdapter(
-    private val onDocumentClick: (DocumentEntity) -> Unit
+    private val onDocumentClick: (DocumentEntity) -> Unit,
+    private val onDeleteClick: (DocumentEntity) -> Unit
 ) : ListAdapter<DocumentEntity, DocumentAdapter.DocumentViewHolder>(DocumentDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DocumentViewHolder {
@@ -44,6 +45,10 @@ class DocumentAdapter(
 
             binding.root.setOnClickListener {
                 onDocumentClick(document)
+            }
+
+            binding.btnDeleteDocument.setOnClickListener {
+                onDeleteClick(document)
             }
         }
     }

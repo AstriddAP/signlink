@@ -44,10 +44,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        
+
         manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
-        
-        // Esto crea las llaves de forma segura para usar en el código
+
         buildConfigField("String", "DB_PASSPHRASE", "\"$dbPassphrase\"")
         buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
         buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
@@ -82,23 +81,39 @@ android {
             excludes += "META-INF/common.proto"
             excludes += "google/protobuf/*.proto"
             excludes += "**/*.proto"
+
+            // Resolvemos conflictos de duplicados eligiendo el primero encontrado
+            pickFirsts += "com/google/api/Advice*"
+            pickFirsts += "com/google/api/LogConfig*"
+            pickFirsts += "com/google/api/SystemParameter*"
+            pickFirsts += "com/google/rpc/Status*"
+            pickFirsts += "com/google/rpc/Code*"
         }
     }
 }
 
-configurations {
-    all {
-        exclude(group = "com.google.guava", module = "listenablefuture")
-        exclude(group = "com.google.protobuf", module = "protobuf-javalite")
-        exclude(group = "com.google.firebase", module = "protolite-well-known-types")
+configurations.all {
+    resolutionStrategy {
+        // Forzamos la versión LITE para que sea compatible con Firebase y Android
+        force("com.google.protobuf:protobuf-javalite:3.25.5")
+        force("com.google.guava:guava:33.3.1-android")
     }
+    // Excluimos la versión pesada de Java solo para el empaquetado/ejecución (runtime/apk),
+    // permitiendo que compileOnly la use para resolver tipos de superclase en tiempo de compilación.
+    if (name.contains("runtime", ignoreCase = true) || name.contains("apk", ignoreCase = true)) {
+        exclude(group = "com.google.protobuf", module = "protobuf-java")
+    }
+
+    // Excluimos listenablefuture para evitar conflictos con Guava
+    exclude(group = "com.google.guava", module = "listenablefuture")
+
+    // Excluimos proto-google-common-protos para evitar conflicto de clases duplicadas con protolite-well-known-types de Firebase
+    exclude(group = "com.google.api.grpc", module = "proto-google-common-protos")
 }
 
 dependencies {
-    implementation("com.google.api.grpc:proto-google-common-protos:2.49.0")
-    implementation("com.google.protobuf:protobuf-java:3.25.5")
-    
     implementation(libs.androidx.core.ktx)
+    implementation("androidx.fragment:fragment-ktx:1.8.9")
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
@@ -113,12 +128,20 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     implementation("androidx.compose.material:material-icons-extended")
 
+    // Google Cloud Speech
     implementation(libs.google.cloud.speech) {
         exclude(group = "org.apache.httpcomponents", module = "httpclient")
+        exclude(group = "com.google.protobuf", module = "protobuf-java")
     }
     implementation(libs.google.auth.library)
     implementation(libs.grpc.okhttp)
 
+    // Usamos la versión LITE (obligatorio para Android/Firebase)
+    implementation("com.google.protobuf:protobuf-javalite:3.25.5")
+    // Proporciona los supertipos de Protobuf Java al compilador para resolver las clases de Google Cloud
+    compileOnly("com.google.protobuf:protobuf-java:3.25.5")
+
+    // Firebase
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth.ktx)
     implementation(libs.firebase.firestore.ktx)
@@ -151,6 +174,8 @@ dependencies {
 
     implementation(libs.androidx.work.runtime.ktx)
 
+    implementation("com.google.android.gms:play-services-auth:21.3.0")
+
     implementation(libs.glide)
     implementation(libs.lottie)
 
@@ -160,6 +185,10 @@ dependencies {
     implementation(libs.androidx.camera.view)
     implementation(libs.androidx.camera.extensions)
     implementation(libs.androidx.concurrent.futures)
+
+    implementation(libs.retrofit.main)
+    implementation(libs.retrofit.gson)
+    implementation(libs.retrofit.logging)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

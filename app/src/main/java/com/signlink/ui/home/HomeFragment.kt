@@ -26,22 +26,21 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentHomeBinding.bind(view)
 
+        setupUI()
         setupClickListeners()
         observeViewModel()
     }
 
+    private fun setupUI() {
+        val currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+        binding.tvWelcomeTitle.text = getString(R.string.hello_user, currentUser?.displayName ?: "Usuario")
+        
+        // Texto fijo para el modo unificado
+        binding.tvProfileMode.text = "Panel de Herramientas de Accesibilidad"
+    }
+
     private fun setupClickListeners() {
-        // Botón de Pánico
-        binding.cardPanic.setOnClickListener {
-            viewModel.triggerPanicButton()
-        }
-
-        // Tarjeta 1: Alertas
-        binding.cardAlerts.setOnClickListener {
-            findNavController().navigate(R.id.nav_alerts)
-        }
-
-        // Tarjeta 2: Chat
+        // Tarjeta 1: Chat
         binding.cardCommunicate.setOnClickListener {
             findNavController().navigate(R.id.nav_communicate)
         }
@@ -69,10 +68,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             findNavController().navigate(R.id.nav_ai_explanation)
         }
 
-        binding.cardNews.setOnClickListener {
-            findNavController().navigate(R.id.nav_news)
-        }
-
         binding.cardVideoCapture.setOnClickListener {
             findNavController().navigate(R.id.nav_video_capture)
         }
@@ -83,27 +78,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun observeViewModel() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.panicState.collectLatest { state ->
-                when (state) {
-                    is HomeViewModel.PanicState.Loading -> {
-                        binding.cardPanic.isEnabled = false
-                        Toast.makeText(context, "Enviando alerta...", Toast.LENGTH_SHORT).show()
-                    }
-                    is HomeViewModel.PanicState.Success -> {
-                        binding.cardPanic.isEnabled = true
-                        Toast.makeText(context, "¡ALERTA DE PÁNICO ENVIADA CON ÉXITO!", Toast.LENGTH_LONG).show()
-                    }
-                    is HomeViewModel.PanicState.Error -> {
-                        binding.cardPanic.isEnabled = true
-                        Toast.makeText(context, "Error: ${state.message}", Toast.LENGTH_LONG).show()
-                    }
-                    else -> {
-                        binding.cardPanic.isEnabled = true
-                    }
-                }
-            }
-        }
+        // No Panic Button to observe
     }
 
     override fun onDestroyView() {

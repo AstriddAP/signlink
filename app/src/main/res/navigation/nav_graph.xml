@@ -28,26 +28,9 @@
         android:label="Login"
         tools:layout="@layout/fragment_login">
         <action
-            android:id="@+id/action_login_to_setup"
-            app:destination="@id/setupFragment"
-            app:popUpTo="@id/loginFragment"
-            app:popUpToInclusive="true" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/setupFragment"
-        android:name="com.signlink.ui.onboarding.SetupFragment"
-        android:label="Seleccionar Perfil"
-        tools:layout="@layout/fragment_setup">
-        <action
-            android:id="@+id/action_setup_to_home_auditivo"
+            android:id="@+id/action_login_to_home"
             app:destination="@id/nav_home"
-            app:popUpTo="@id/setupFragment"
-            app:popUpToInclusive="true" />
-        <action
-            android:id="@+id/action_setup_to_home_mudo"
-            app:destination="@id/nav_home_mudo"
-            app:popUpTo="@id/setupFragment"
+            app:popUpTo="@id/loginFragment"
             app:popUpToInclusive="true" />
     </fragment>
 
@@ -58,40 +41,16 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/nav_home_mudo"
-        android:name="com.signlink.ui.home.HomeMudoFragment"
-        android:label="Inicio"
-        tools:layout="@layout/fragment_home_mudo" />
-
-    <fragment
         android:id="@+id/nav_communicate"
         android:name="com.signlink.ui.communicate.CommunicateFragment"
         android:label="Comunicar"
         tools:layout="@layout/fragment_communicate" />
 
     <fragment
-        android:id="@+id/nav_alerts"
-        android:name="com.signlink.ui.alerts.AlertsFragment"
-        android:label="Alertas"
-        tools:layout="@layout/fragment_alerts" />
-
-    <fragment
         android:id="@+id/nav_map"
         android:name="com.signlink.ui.map.MapFragment"
         android:label="Mapa"
         tools:layout="@layout/fragment_map" />
-
-    <fragment
-        android:id="@+id/nav_nfc"
-        android:name="com.signlink.ui.nfc.NFCFragment"
-        android:label="NFC"
-        tools:layout="@layout/fragment_nfc" />
-
-    <fragment
-        android:id="@+id/nav_contacts"
-        android:name="com.signlink.ui.contacts.ContactsFragment"
-        android:label="Contactos"
-        tools:layout="@layout/fragment_contacts" />
 
     <fragment
         android:id="@+id/nav_settings"
@@ -155,12 +114,6 @@
         android:name="com.signlink.ui.ai.AiExplanationFragment"
         android:label="Simplificador IA"
         tools:layout="@layout/fragment_ai_explanation" />
-
-    <fragment
-        android:id="@+id/nav_news"
-        android:name="com.signlink.ui.news.NewsFragment"
-        android:label="Noticias IA"
-        tools:layout="@layout/fragment_news" />
 
     <fragment
         android:id="@+id/nav_video_capture"

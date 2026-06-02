@@ -25,6 +25,35 @@ class AuthRepositoryImpl @Inject constructor(
                 } else {
                     trySend(Result.failure(task.exception ?: Exception("Login failed")))
                 }
+                close()
+            }
+        awaitClose()
+    }
+
+    override fun loginWithGoogle(idToken: String, isActionLogin: Boolean): Flow<Result<AuthResult>> = callbackFlow {
+        val credential = com.google.firebase.auth.GoogleAuthProvider.getCredential(idToken, null)
+        firebaseAuth.signInWithCredential(credential)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val authResult = task.result
+                    val isNewUser = authResult.additionalUserInfo?.isNewUser ?: false
+                    
+                    if (isNewUser && isActionLogin) {
+                        // Si es nuevo y quería LOGUEARSE, lo rechazamos y borramos
+                        authResult.user?.delete()?.addOnCompleteListener {
+                            firebaseAuth.signOut()
+                            trySend(Result.failure(Exception("USER_NOT_REGISTERED")))
+                            close()
+                        }
+                    } else {
+                        // Si ya existía O si quería REGISTRARSE, lo dejamos pasar
+                        trySend(Result.success(authResult))
+                        close()
+                    }
+                } else {
+                    trySend(Result.failure(task.exception ?: Exception("Google login failed")))
+                    close()
+                }
             }
         awaitClose()
     }
@@ -37,6 +66,7 @@ class AuthRepositoryImpl @Inject constructor(
                 } else {
                     trySend(Result.failure(task.exception ?: Exception("Registration failed")))
                 }
+                close() // Cerrar el flujo después de una respuesta
             }
         awaitClose()
     }

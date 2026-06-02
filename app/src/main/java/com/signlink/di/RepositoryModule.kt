@@ -4,6 +4,8 @@ import com.signlink.data.repository.AlertRepository
 import com.signlink.data.repository.AlertRepositoryImpl
 import com.signlink.data.repository.AuthRepository
 import com.signlink.data.repository.AuthRepositoryImpl
+import com.signlink.data.repository.UserRepository
+import com.signlink.data.repository.UserRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -25,4 +27,10 @@ abstract class RepositoryModule {
     abstract fun bindAuthRepository(
         authRepositoryImpl: AuthRepositoryImpl
     ): AuthRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindUserRepository(
+        userRepositoryImpl: UserRepositoryImpl
+    ): UserRepository
 }

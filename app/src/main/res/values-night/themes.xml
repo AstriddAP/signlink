@@ -1,7 +1,20 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.Signlink" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+    <!-- Base application theme para Modo Oscuro -->
+    <style name="Base.Theme.SignLink" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Colores Principales (Se mantienen vibrantes) -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/secondary</item>
+
+        <!-- Fondos y Superficies -->
+        <item name="android:windowBackground">#12141C</item>
+        <item name="colorSurface">#1E222D</item>
+        <item name="colorOnSurface">#FFFFFF</item>
+        <item name="colorOnSurfaceVariant">#B0B3B8</item>
+
+        <!-- Navigation Bar -->
+        <item name="android:navigationBarColor">#12141C</item>
     </style>
+
+    <style name="Theme.SignLink" parent="Base.Theme.SignLink" />
 </resources>

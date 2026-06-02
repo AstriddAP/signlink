@@ -10,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.signlink.R
+import com.signlink.data.local.entity.DocumentEntity
 import com.signlink.databinding.FragmentDocumentListBinding
 import com.signlink.util.SecurityManager
 import dagger.hilt.android.AndroidEntryPoint
@@ -70,16 +71,34 @@ class DocumentListFragment : Fragment(R.layout.fragment_document_list) {
     }
 
     private fun setupRecyclerView() {
-        adapter = DocumentAdapter { document ->
-            if (document.type == "DNI") {
-                val action = DocumentListFragmentDirections.actionNavDocumentsToViewDni(document.id)
-                findNavController().navigate(action)
-            } else {
-                // Implement viewing other types if needed
+        adapter = DocumentAdapter(
+            onDocumentClick = { document ->
+                if (document.type == "DNI") {
+                    val action = DocumentListFragmentDirections.actionNavDocumentsToViewDni(document.id)
+                    findNavController().navigate(action)
+                }
+            },
+            onDeleteClick = { document ->
+                confirmDelete(document)
             }
-        }
+        )
         binding.rvDocuments.layoutManager = LinearLayoutManager(requireContext())
         binding.rvDocuments.adapter = adapter
+    }
+
+    private fun confirmDelete(document: DocumentEntity) {
+        securityManager.showBiometricPrompt(
+            activity = requireActivity(),
+            title = "Confirmar eliminación",
+            subtitle = "Autentícate para eliminar ${document.title}",
+            onSuccess = {
+                viewModel.deleteDocument(document)
+                Toast.makeText(context, "Documento eliminado", Toast.LENGTH_SHORT).show()
+            },
+            onError = { error ->
+                Toast.makeText(context, "No se pudo eliminar: $error", Toast.LENGTH_SHORT).show()
+            }
+        )
     }
 
     private fun setupListeners() {

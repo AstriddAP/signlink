@@ -12,6 +12,9 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import com.signlink.R
 import com.signlink.databinding.ActivityMainBinding
 import com.signlink.ui.onboarding.AuthViewModel
@@ -49,12 +52,28 @@ class MainActivity : AppCompatActivity() {
         // Navigation Drawer
         appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.nav_home, R.id.nav_communicate, R.id.nav_alerts,
-                R.id.nav_map, R.id.nav_contacts, R.id.nav_settings
+                R.id.nav_home, R.id.nav_communicate,
+                R.id.nav_map, R.id.nav_settings
             ), binding.drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         binding.navView.setupWithNavController(navController)
+        
+        // Actualizar datos del usuario en el Header del Drawer
+        val headerView = binding.navView.getHeaderView(0)
+        val navName = headerView.findViewById<android.widget.TextView>(R.id.nav_header_name)
+        val navEmail = headerView.findViewById<android.widget.TextView>(R.id.nav_header_email)
+
+        lifecycleScope.launch {
+            authViewModel.userProfile.collectLatest { user ->
+                user?.let {
+                    navName.text = it.displayName
+                    navEmail.text = it.email
+                }
+            }
+        }
+
+        authViewModel.checkUserStatus()
         
         // Bottom Navigation
         binding.appBarMain.contentMain.bottomNav.setupWithNavController(navController)
@@ -65,11 +84,12 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_logout -> {
                     binding.drawerLayout.closeDrawers()
                     authViewModel.logout()
-                    // Logout logic: Navigate to login and clear stack
-                    val navOptions = NavOptions.Builder()
+                    
+                    // Navegación limpia al login eliminando todo el historial anterior
+                    navController.navigate(R.id.loginFragment, null, NavOptions.Builder()
                         .setPopUpTo(R.id.nav_graph, true)
-                        .build()
-                    navController.navigate(R.id.loginFragment, null, navOptions)
+                        .setLaunchSingleTop(true)
+                        .build())
                     true
                 }
                 else -> {

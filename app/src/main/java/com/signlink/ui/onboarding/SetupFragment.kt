@@ -3,32 +3,16 @@ package com.signlink.ui.onboarding
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
 import com.signlink.R
-import com.signlink.databinding.FragmentSetupBinding
-import dagger.hilt.android.AndroidEntryPoint
 
-@AndroidEntryPoint
+/**
+ * Fragmento de configuración de perfil (Obsoleto).
+ * Se mantiene temporalmente para evitar errores de compilación si hay referencias residuales,
+ * pero ya no se utiliza en el flujo principal (Splash -> Login -> Home).
+ */
 class SetupFragment : Fragment(R.layout.fragment_setup) {
-
-    private var _binding: FragmentSetupBinding? = null
-    private val binding get() = _binding!!
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        _binding = FragmentSetupBinding.bind(view)
-
-        binding.cardSelectAuditivo.setOnClickListener {
-            findNavController().navigate(R.id.action_setup_to_home_auditivo)
-        }
-
-        binding.cardSelectMudo.setOnClickListener {
-            findNavController().navigate(R.id.action_setup_to_home_mudo)
-        }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+        // Este fragmento ya no es parte del flujo activo.
     }
 }

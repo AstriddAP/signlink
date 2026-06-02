@@ -130,12 +130,21 @@
                 android:textStyle="bold"
                 app:cornerRadius="16dp" />
 
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/login_progress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:indeterminate="true"
+                android:visibility="gone" />
+
             <TextView
                 android:id="@+id/tv_register"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginTop="16dp"
+                android:padding="8dp"
                 android:text="¿No tienes cuenta? Regístrate aquí"
                 android:textColor="@color/on_surface_variant" />
 
@@ -165,6 +174,23 @@
                     android:layout_weight="1"
                     android:background="@color/gray_200" />
             </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_google"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="24dp"
+                android:text="Continuar con Google"
+                android:textAllCaps="false"
+                android:textColor="@color/on_surface"
+                android:textSize="16sp"
+                app:cornerRadius="16dp"
+                app:icon="@android:drawable/ic_menu_search"
+                app:iconGravity="textStart"
+                app:iconPadding="12dp"
+                app:iconTint="@null"
+                app:strokeColor="@color/gray_200" />
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>

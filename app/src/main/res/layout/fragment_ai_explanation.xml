@@ -11,7 +11,7 @@
         android:id="@+id/tv_instructions"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Pega un texto complejo o un mensaje largo para que la IA lo explique de forma sencilla."
+        android:text="Pega un texto largo o sube un archivo (PDF/Imagen) para obtener un resumen inteligente con audio."
         android:textColor="@color/on_surface_variant"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -33,48 +33,33 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_simplify"
+        android:id="@+id/btn_summarize"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="4dp"
-        android:text="Simplificar"
+        android:text="Resumir Texto"
         android:textAllCaps="false"
-        android:textSize="12sp"
-        app:layout_constraintEnd_toStartOf="@+id/btn_correct"
-        app:layout_constraintHorizontal_bias="0.5"
+        android:textSize="14sp"
+        app:icon="@android:drawable/ic_menu_edit"
+        app:layout_constraintEnd_toStartOf="@+id/btn_upload_file"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/til_input_text" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_correct"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="4dp"
-        android:text="Corregir"
-        android:textAllCaps="false"
-        android:textSize="12sp"
-        app:layout_constraintBottom_toBottomOf="@+id/btn_simplify"
-        app:layout_constraintEnd_toStartOf="@+id/btn_define"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/btn_simplify"
-        app:layout_constraintTop_toTopOf="@+id/btn_simplify" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_define"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:id="@+id/btn_upload_file"
+        style="@style/Widget.Material3.Button.TonalButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
-        android:text="Diccionario"
+        android:text="Resumir Archivo"
         android:textAllCaps="false"
-        android:textSize="12sp"
-        app:layout_constraintBottom_toBottomOf="@+id/btn_simplify"
+        android:textSize="14sp"
+        app:icon="@android:drawable/stat_sys_upload"
+        app:layout_constraintBottom_toBottomOf="@+id/btn_summarize"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/btn_correct"
-        app:layout_constraintTop_toTopOf="@+id/btn_simplify" />
+        app:layout_constraintStart_toEndOf="@+id/btn_summarize"
+        app:layout_constraintTop_toTopOf="@+id/btn_summarize" />
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_result"
@@ -85,7 +70,7 @@
         app:cardCornerRadius="16dp"
         app:cardElevation="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btn_simplify">
+        app:layout_constraintTop_toBottomOf="@id/btn_summarize">
 
         <ScrollView
             android:layout_width="match_parent"
@@ -100,7 +85,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Resultado simplificado:"
+                    android:text="Resumen de la IA:"
                     android:textColor="@color/primary"
                     android:textStyle="bold" />
 
@@ -111,7 +96,7 @@
                     android:layout_marginTop="8dp"
                     android:textColor="@color/on_surface"
                     android:textSize="16sp"
-                    tools:text="Aquí aparecerá el texto simplificado..." />
+                    tools:text="Aquí aparecerá el resumen generado..." />
             </LinearLayout>
         </ScrollView>
     </com.google.android.material.card.MaterialCardView>
@@ -124,6 +109,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btn_simplify" />
+        app:layout_constraintTop_toBottomOf="@id/btn_summarize" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
