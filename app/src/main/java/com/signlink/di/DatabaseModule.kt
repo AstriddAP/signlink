@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.room.Room
 import com.signlink.BuildConfig
 import com.signlink.data.local.AppDatabase
-import com.signlink.data.local.dao.DocumentDao
 import com.signlink.data.local.dao.NoteDao
 import dagger.Module
 import dagger.Provides
@@ -40,11 +39,6 @@ object DatabaseModule {
         .openHelperFactory(factory)
         .fallbackToDestructiveMigration()
         .build()
-    }
-
-    @Provides
-    fun provideDocumentDao(database: AppDatabase): DocumentDao {
-        return database.documentDao()
     }
 
     @Provides

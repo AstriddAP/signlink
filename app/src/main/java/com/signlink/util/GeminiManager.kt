@@ -1,9 +1,7 @@
 package com.signlink.util
 
 import com.signlink.BuildConfig
-import android.graphics.Bitmap
 import com.google.ai.client.generativeai.GenerativeModel
-import com.google.ai.client.generativeai.type.content
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -21,6 +19,9 @@ class GeminiManager @Inject constructor() {
         )
     }
 
+    /**
+     * Simplifica un texto complejo a lenguaje sencillo con emojis para mejor comprensión.
+     */
     suspend fun simplifyMessage(complexText: String): String? = withContext(Dispatchers.IO) {
         try {
             val prompt = """
@@ -37,11 +38,13 @@ class GeminiManager @Inject constructor() {
             val response = model.generateContent(prompt)
             response.text
         } catch (e: Exception) {
-            e.printStackTrace()
             null
         }
     }
 
+    /**
+     * Corrige la gramática y ortografía de un texto.
+     */
     suspend fun correctMessage(text: String): String? = withContext(Dispatchers.IO) {
         try {
             val prompt = """
@@ -62,6 +65,9 @@ class GeminiManager @Inject constructor() {
         }
     }
 
+    /**
+     * Define un concepto de forma extremadamente sencilla (para nivel de 8 años).
+     */
     suspend fun defineWord(word: String): String? = withContext(Dispatchers.IO) {
         try {
             val prompt = """
@@ -80,52 +86,9 @@ class GeminiManager @Inject constructor() {
         }
     }
 
-    suspend fun explainNews(newsContent: String): String? = withContext(Dispatchers.IO) {
-        try {
-            val prompt = """
-                Explica la siguiente noticia de forma sencilla y resumida para una persona con discapacidad auditiva.
-                Tu explicación DEBE tener estos puntos:
-                - 📰 ¿Qué pasó?
-                - 📅 ¿Cuándo ocurrió?
-                - 👥 ¿Quiénes participaron?
-                - 💡 Resumen fácil de entender
-                
-                Usa emojis, frases cortas y lenguaje muy simple.
-                
-                Noticia:
-                $newsContent
-            """.trimIndent()
-
-            val response = model.generateContent(prompt)
-            response.text
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    suspend fun analyzeDocument(bitmap: Bitmap): String? = withContext(Dispatchers.IO) {
-        try {
-            val prompt = """
-                Analiza esta imagen de un documento (DNI, carnet, etc.).
-                1. Identifica qué documento es.
-                2. Extrae los datos principales (Nombre, fecha de vencimiento).
-                3. Explica de forma muy breve y sencilla qué contiene para que una persona pueda escucharlo.
-                Usa un tono amable y pausado.
-            """.trimIndent()
-
-            val inputContent = content {
-                image(bitmap)
-                text(prompt)
-            }
-
-            val response = model.generateContent(inputContent)
-            response.text
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
-    }
-
+    /**
+     * Resalta números y cantidades en un texto para facilitar la localización visual.
+     */
     suspend fun formatNumbersInText(text: String): String? = withContext(Dispatchers.IO) {
         try {
             val prompt = """
@@ -135,33 +98,7 @@ class GeminiManager @Inject constructor() {
             """.trimIndent()
 
             val response = model.generateContent(prompt)
-            response.text // Esto es String?
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    suspend fun extractDniData(bitmap: Bitmap): String? = withContext(Dispatchers.IO) {
-        try {
-            val prompt = """
-                Analiza esta imagen de un DNI peruano y extrae la información en este formato JSON exacto:
-                {
-                  "nombres": "...",
-                  "apellidos": "...",
-                  "dni": "...",
-                  "direccion": "...",
-                  "fecha_nacimiento": "..."
-                }
-                Si no puedes leer un campo, pon "No detectado". No incluyas nada más que el JSON.
-            """.trimIndent()
-
-            val inputContent = content {
-                image(bitmap)
-                text(prompt)
-            }
-
-            val response = model.generateContent(inputContent)
-            response.text?.replace("```json", "")?.replace("```", "")?.trim()
+            response.text
         } catch (e: Exception) {
             null
         }
