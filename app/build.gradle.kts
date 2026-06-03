@@ -102,22 +102,12 @@ android {
 
 configurations.all {
     resolutionStrategy {
-        // Forzamos versiones consistentes para evitar conflictos de "diamante"
-        // Usamos javalite para compatibilidad con Android y Firestore
+        // Forzamos la versión LITE para que sea compatible con Firebase y Android
         force("com.google.protobuf:protobuf-javalite:3.25.5")
         force("com.google.guava:guava:33.3.1-android")
-        force("com.google.api.grpc:proto-google-common-protos:2.41.0")
     }
-
-    // Excluimos la versión pesada de Java solo para el empaquetado/ejecución (runtime/apk),
-    // permitiendo que compileOnly la use para resolver tipos de superclase en tiempo de compilación.
-    if (name.contains("runtime", ignoreCase = true) || name.contains("apk", ignoreCase = true)) {
-        exclude(group = "com.google.protobuf", module = "protobuf-java")
-    }
-    exclude(group = "com.google.guava", module = "listenablefuture")
-
-    // Excluimos proto-google-common-protos para evitar conflicto de clases duplicadas con protolite-well-known-types de Firebase
-    exclude(group = "com.google.api.grpc", module = "proto-google-common-protos")
+    // Excluimos la versión pesada de Java que causa el VerifyError
+    exclude(group = "com.google.protobuf", module = "protobuf-java")
 }
 
 dependencies {
@@ -137,18 +127,11 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     implementation("androidx.compose.material:material-icons-extended")
 
-    // Google Cloud Speech
-    implementation(libs.google.cloud.speech) {
-        exclude(group = "org.apache.httpcomponents", module = "httpclient")
-        exclude(group = "com.google.protobuf", module = "protobuf-java")
-    }
-    implementation(libs.google.auth.library)
-    implementation(libs.grpc.okhttp)
-
-    // Protobuf configuration - Usar javalite explícitamente
+    // Usamos la versión LITE (obligatorio para Android/Firebase)
     implementation("com.google.protobuf:protobuf-javalite:3.25.5")
-    // Proporciona los supertipos de Protobuf Java al compilador para resolver las clases de Google Cloud
-    compileOnly("com.google.protobuf:protobuf-java:3.25.5")
+    
+    // Necesario para CameraX al no contar con la librería completa de Guava de forma automática
+    implementation("com.google.guava:guava:33.3.1-android")
 
     // Firebase
     implementation(platform(libs.firebase.bom))

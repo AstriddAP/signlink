@@ -27,6 +27,7 @@ class AudioTranscriptionViewModel @Inject constructor(
 
     fun transcribeAudioUri(uri: Uri) {
         viewModelScope.launch {
+            _transcription.value = ""
             _isLoading.value = true
             try {
                 val inputStream = context.contentResolver.openInputStream(uri)
@@ -35,7 +36,7 @@ class AudioTranscriptionViewModel @Inject constructor(
                 repository.transcribeAudioFile(bytes)
                     .catch { e -> _transcription.value = "Error: ${e.message}" }
                     .collect { result ->
-                        _transcription.value += result.transcript + " "
+                        _transcription.value = result.transcript
                     }
             } catch (e: Exception) {
                 _transcription.value = "Error al leer el archivo: ${e.message}"
@@ -61,11 +62,17 @@ class AudioTranscriptionViewModel @Inject constructor(
 
     fun startLiveTranscription() {
         viewModelScope.launch {
+            if (_transcription.value.startsWith("Error")) {
+                _transcription.value = ""
+            }
             _isLoading.value = true
             repository.startStreamingRecognition()
                 .catch { e -> _transcription.value = "Error: ${e.message}" }
                 .collect { result ->
                     if (result.isFinal) {
+                        if (_transcription.value.startsWith("Error")) {
+                            _transcription.value = ""
+                        }
                         _transcription.value += result.transcript + " "
                     }
                 }

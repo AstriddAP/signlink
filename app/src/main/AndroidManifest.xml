@@ -36,6 +36,7 @@
         <activity
             android:name=".ui.main.MainActivity"
             android:exported="true"
+            android:launchMode="singleTop"
             android:theme="@style/Theme.SignLink">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

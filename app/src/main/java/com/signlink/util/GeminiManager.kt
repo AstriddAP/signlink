@@ -14,7 +14,7 @@ class GeminiManager @Inject constructor() {
 
     private val model by lazy {
         GenerativeModel(
-            modelName = "gemini-1.5-flash",
+            modelName = "gemini-2.5-flash",
             apiKey = apiKey
         )
     }

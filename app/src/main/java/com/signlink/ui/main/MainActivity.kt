@@ -116,6 +116,15 @@ class MainActivity : AppCompatActivity() {
         handleSharedAudio(navController)
     }
 
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        val navHostFragment = supportFragmentManager
+            .findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
+        val navController = navHostFragment.navController
+        handleSharedAudio(navController)
+    }
+
     private fun handleSharedAudio(navController: androidx.navigation.NavController) {
         if (intent?.action == android.content.Intent.ACTION_SEND && intent.type?.startsWith("audio/") == true) {
             (intent.getParcelableExtra<android.os.Parcelable>(android.content.Intent.EXTRA_STREAM) as? android.net.Uri)?.let { uri ->
