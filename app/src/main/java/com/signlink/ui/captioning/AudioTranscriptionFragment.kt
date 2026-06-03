@@ -61,6 +61,11 @@ class AudioTranscriptionFragment : Fragment() {
     }
 
     private fun setupListeners() {
+        binding.btnRecord.setOnClickListener {
+            // Lógica para iniciar reconocimiento de voz directo
+            viewModel.startLiveTranscription()
+        }
+
         binding.btnCopy.setOnClickListener {
             val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             val clip = ClipData.newPlainText("Transcripción SignLink", binding.tvTranscriptionResult.text)

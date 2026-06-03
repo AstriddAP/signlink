@@ -88,23 +88,32 @@ android {
             pickFirsts += "com/google/api/SystemParameter*"
             pickFirsts += "com/google/rpc/Status*"
             pickFirsts += "com/google/rpc/Code*"
+            pickFirsts += "google/protobuf/*.proto"
+            pickFirsts += "META-INF/provisions.gradle"
+            
+            // Muy importante para el error de GeneratedMessage y tipos comunes:
+            pickFirsts += "com/google/protobuf/**"
+            pickFirsts += "com/google/type/**"
+            pickFirsts += "com/google/api/**"
+            pickFirsts += "com/google/rpc/**"
         }
     }
 }
 
 configurations.all {
     resolutionStrategy {
-        // Forzamos la versión LITE para que sea compatible con Firebase y Android
+        // Forzamos versiones consistentes para evitar conflictos de "diamante"
+        // Usamos javalite para compatibilidad con Android y Firestore
         force("com.google.protobuf:protobuf-javalite:3.25.5")
         force("com.google.guava:guava:33.3.1-android")
+        force("com.google.api.grpc:proto-google-common-protos:2.41.0")
     }
+
     // Excluimos la versión pesada de Java solo para el empaquetado/ejecución (runtime/apk),
     // permitiendo que compileOnly la use para resolver tipos de superclase en tiempo de compilación.
     if (name.contains("runtime", ignoreCase = true) || name.contains("apk", ignoreCase = true)) {
         exclude(group = "com.google.protobuf", module = "protobuf-java")
     }
-
-    // Excluimos listenablefuture para evitar conflictos con Guava
     exclude(group = "com.google.guava", module = "listenablefuture")
 
     // Excluimos proto-google-common-protos para evitar conflicto de clases duplicadas con protolite-well-known-types de Firebase
@@ -136,7 +145,7 @@ dependencies {
     implementation(libs.google.auth.library)
     implementation(libs.grpc.okhttp)
 
-    // Usamos la versión LITE (obligatorio para Android/Firebase)
+    // Protobuf configuration - Usar javalite explícitamente
     implementation("com.google.protobuf:protobuf-javalite:3.25.5")
     // Proporciona los supertipos de Protobuf Java al compilador para resolver las clases de Google Cloud
     compileOnly("com.google.protobuf:protobuf-java:3.25.5")

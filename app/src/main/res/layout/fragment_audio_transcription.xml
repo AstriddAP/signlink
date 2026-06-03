@@ -11,8 +11,8 @@
         android:id="@+id/tv_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Transcripción de Audio"
-        android:textColor="@color/primary"
+        android:text="@string/transcription_title"
+        android:textColor="?attr/colorPrimary"
         android:textSize="22sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
@@ -26,7 +26,8 @@
         android:layout_marginBottom="20dp"
         app:cardCornerRadius="16dp"
         app:cardElevation="4dp"
-        app:layout_constraintBottom_toTopOf="@+id/btn_copy"
+        app:cardBackgroundColor="?attr/colorSurface"
+        app:layout_constraintBottom_toTopOf="@+id/btn_record"
         app:layout_constraintTop_toBottomOf="@id/tv_title">
 
         <ScrollView
@@ -56,12 +57,22 @@
         app:layout_constraintTop_toTopOf="@id/card_transcription" />
 
     <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_record"
+        style="@style/Widget.Material3.Button.TonalButton"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginBottom="12dp"
+        android:text="@string/btn_record_audio"
+        app:icon="@android:drawable/ic_btn_speak_now"
+        app:layout_constraintBottom_toTopOf="@+id/btn_copy" />
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_copy"
         style="@style/Widget.Material3.Button.TonalButton"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:layout_marginBottom="12dp"
-        android:text="Copiar Texto"
+        android:text="@string/btn_copy_text"
         app:icon="@android:drawable/ic_menu_edit"
         app:layout_constraintBottom_toTopOf="@+id/btn_simplify_ia" />
 
@@ -69,7 +80,7 @@
         android:id="@+id/btn_simplify_ia"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:text="Simplificar con IA"
+        android:text="@string/btn_simplify_ia"
         app:icon="@android:drawable/ic_menu_view"
         app:layout_constraintBottom_toBottomOf="parent" />
 

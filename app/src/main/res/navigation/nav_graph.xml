@@ -46,11 +46,6 @@
         android:label="Comunicar"
         tools:layout="@layout/fragment_communicate" />
 
-    <fragment
-        android:id="@+id/nav_map"
-        android:name="com.signlink.ui.map.MapFragment"
-        android:label="Mapa"
-        tools:layout="@layout/fragment_map" />
 
     <fragment
         android:id="@+id/nav_settings"
@@ -64,50 +59,6 @@
         android:label="Subtítulos en Vivo"
         tools:layout="@layout/fragment_live_captioning" />
 
-    <fragment
-        android:id="@+id/nav_documents"
-        android:name="com.signlink.ui.documents.DocumentListFragment"
-        android:label="Mis Documentos"
-        tools:layout="@layout/fragment_document_list">
-        <action
-            android:id="@+id/action_nav_documents_to_addDocument"
-            app:destination="@id/nav_add_document" />
-        <action
-            android:id="@+id/action_nav_documents_to_viewDni"
-            app:destination="@id/nav_view_dni" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/nav_add_document"
-        android:name="com.signlink.ui.documents.AddDocumentFragment"
-        android:label="Agregar Documento"
-        tools:layout="@layout/fragment_add_document" />
-
-    <fragment
-        android:id="@+id/nav_view_dni"
-        android:name="com.signlink.ui.documents.ViewDniFragment"
-        android:label="Ver DNI"
-        tools:layout="@layout/fragment_view_dni">
-        <argument
-            android:name="documentId"
-            app:argType="integer" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/nav_notes"
-        android:name="com.signlink.ui.notes.NoteListFragment"
-        android:label="Notas Seguras"
-        tools:layout="@layout/fragment_note_list">
-        <action
-            android:id="@+id/action_nav_notes_to_addNote"
-            app:destination="@id/nav_add_note" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/nav_add_note"
-        android:name="com.signlink.ui.notes.AddNoteFragment"
-        android:label="Nueva Nota"
-        tools:layout="@layout/fragment_add_note" />
 
     <fragment
         android:id="@+id/nav_ai_explanation"
@@ -115,11 +66,6 @@
         android:label="Simplificador IA"
         tools:layout="@layout/fragment_ai_explanation" />
 
-    <fragment
-        android:id="@+id/nav_video_capture"
-        android:name="com.signlink.ui.video.VideoCaptureFragment"
-        android:label="Grabar con Subtítulos"
-        tools:layout="@layout/fragment_video_capture" />
 
     <fragment
         android:id="@+id/nav_audio_transcription"
@@ -130,5 +76,11 @@
             android:name="audio_uri"
             app:argType="string" />
     </fragment>
+
+    <fragment
+        android:id="@+id/nav_visual_dictionary"
+        android:name="com.signlink.ui.dictionary.VisualDictionaryFragment"
+        android:label="Diccionario LSP"
+        tools:layout="@layout/fragment_visual_dictionary" />
 
 </navigation>

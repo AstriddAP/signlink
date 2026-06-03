@@ -45,35 +45,62 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             findNavController().navigate(R.id.nav_communicate)
         }
 
-        // Tarjeta 3: Ubicación
-        binding.cardMap.setOnClickListener {
-            findNavController().navigate(R.id.nav_map)
+        // Tarjeta 2: Emergencia
+        binding.cardEmergency.setOnClickListener {
+            sendEmergencyLocation()
         }
 
-        // Tarjeta 4: Subtítulos
+        // Tarjeta 3: Modo Escucha
         binding.cardCaptions.setOnClickListener {
             findNavController().navigate(R.id.nav_live_captioning)
         }
 
-        // Tarjeta 5: Documentos
-        binding.cardDocuments.setOnClickListener {
-            findNavController().navigate(R.id.nav_documents)
+        // Tarjeta 4: Transcriptor WhatsApp
+        binding.cardAudioTranscriber.setOnClickListener {
+            findNavController().navigate(R.id.nav_audio_transcription)
         }
 
-        binding.cardNotes.setOnClickListener {
-            findNavController().navigate(R.id.nav_notes)
-        }
-
+        // Tarjeta 5: IA Explica
         binding.cardAiExplanation.setOnClickListener {
             findNavController().navigate(R.id.nav_ai_explanation)
         }
 
-        binding.cardVideoCapture.setOnClickListener {
-            findNavController().navigate(R.id.nav_video_capture)
+        // Tarjeta 6: Diccionario LSP
+        binding.cardVisualDictionary.setOnClickListener {
+            findNavController().navigate(R.id.nav_visual_dictionary)
         }
         
         binding.cardProfileImage.setOnClickListener {
             findNavController().navigate(R.id.nav_settings)
+        }
+    }
+
+    private fun sendEmergencyLocation() {
+        val fusedLocationClient = com.google.android.gms.location.LocationServices.getFusedLocationProviderClient(requireActivity())
+        try {
+            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                if (location != null) {
+                    val uri = "https://maps.google.com/?q=${location.latitude},${location.longitude}"
+                    val message = "¡EMERGENCIA! Necesito ayuda. Mi ubicación actual es: $uri"
+                    val intent = android.content.Intent(android.content.Intent.ACTION_SEND)
+                    intent.type = "text/plain"
+                    intent.setPackage("com.whatsapp")
+                    intent.putExtra(android.content.Intent.EXTRA_TEXT, message)
+                    
+                    try {
+                        startActivity(intent)
+                    } catch (e: Exception) {
+                        Toast.makeText(requireContext(), "WhatsApp no está instalado", Toast.LENGTH_SHORT).show()
+                        // Fallback sharing
+                        val shareIntent = android.content.Intent.createChooser(intent, "Enviar ubicación de emergencia")
+                        startActivity(shareIntent)
+                    }
+                } else {
+                    Toast.makeText(requireContext(), "No se pudo obtener la ubicación. Verifica tu GPS.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        } catch (e: SecurityException) {
+            Toast.makeText(requireContext(), "Permiso de ubicación denegado", Toast.LENGTH_SHORT).show()
         }
     }
 

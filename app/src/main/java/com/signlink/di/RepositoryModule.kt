@@ -6,6 +6,8 @@ import com.signlink.data.repository.AuthRepository
 import com.signlink.data.repository.AuthRepositoryImpl
 import com.signlink.data.repository.UserRepository
 import com.signlink.data.repository.UserRepositoryImpl
+import com.signlink.data.repository.SpeechRecognitionRepository
+import com.signlink.data.repository.SpeechRecognitionRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -33,4 +35,10 @@ abstract class RepositoryModule {
     abstract fun bindUserRepository(
         userRepositoryImpl: UserRepositoryImpl
     ): UserRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindSpeechRecognitionRepository(
+        speechRecognitionRepositoryImpl: SpeechRecognitionRepositoryImpl
+    ): SpeechRecognitionRepository
 }

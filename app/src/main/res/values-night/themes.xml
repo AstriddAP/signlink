@@ -1,19 +1,20 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme para Modo Oscuro -->
     <style name="Base.Theme.SignLink" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Colores Principales (Se mantienen vibrantes) -->
+        <!-- Colores Principales -->
         <item name="colorPrimary">@color/primary</item>
         <item name="colorOnPrimary">@color/white</item>
         <item name="colorSecondary">@color/secondary</item>
 
-        <!-- Fondos y Superficies -->
+        <!-- Fondos y Superficies para Modo Oscuro -->
         <item name="android:windowBackground">#12141C</item>
         <item name="colorSurface">#1E222D</item>
         <item name="colorOnSurface">#FFFFFF</item>
         <item name="colorOnSurfaceVariant">#B0B3B8</item>
-
-        <!-- Navigation Bar -->
         <item name="android:navigationBarColor">#12141C</item>
+
+        <!-- Colores de Tarjetas Adaptados para Oscuro -->
+        <item name="colorSurfaceVariant">#252936</item>
     </style>
 
     <style name="Theme.SignLink" parent="Base.Theme.SignLink" />

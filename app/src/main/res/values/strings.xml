@@ -33,10 +33,16 @@
     <string name="alerts_title">Alertas</string>
     <string name="alerts_count">%1$d nuevas</string>
     <string name="chat_title">Chat</string>
-    <string name="location_title">Ubicación</string>
+    <string name="location_title">Emergencia</string>
     <string name="location_subtitle">Compartir GPS</string>
     <string name="captions_title">Subtítulos</string>
     <string name="captions_subtitle">En vivo</string>
+    <string name="audio_transcriber_title">Transcriptor</string>
+    <string name="audio_transcriber_subtitle">Audios de WhatsApp</string>
+    <string name="visual_dictionary_title">Diccionario LSP</string>
+    <string name="visual_dictionary_subtitle">Gifs de señas</string>
+    <string name="ai_explain_title">IA Explica</string>
+    <string name="ai_explain_subtitle">Resume mensajes</string>
 
     <string name="recent_alerts">Alertas Recientes</string>
     <string name="recent_phrases">Frases Recientes</string>
@@ -64,4 +70,9 @@
 
     <!-- Google Auth -->
     <string name="default_web_client_id" translatable="false">295632983962-ltgf1bnooj3dfu1g4gn9v5ts4pst3s36.apps.googleusercontent.com</string>
+    <string name="transcription_title">Transcripción de Audio</string>
+    <string name="btn_record_audio">Grabar Audio Directo</string>
+    <string name="btn_copy_text">Copiar Texto</string>
+    <string name="btn_simplify_ia">Simplificar con IA</string>
+    <string name="processing_audio">Procesando el audio compartido...</string>
 </resources>

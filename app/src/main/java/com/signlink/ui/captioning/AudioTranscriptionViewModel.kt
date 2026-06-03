@@ -58,4 +58,18 @@ class AudioTranscriptionViewModel @Inject constructor(
             _isLoading.value = false
         }
     }
+
+    fun startLiveTranscription() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            repository.startStreamingRecognition()
+                .catch { e -> _transcription.value = "Error: ${e.message}" }
+                .collect { result ->
+                    if (result.isFinal) {
+                        _transcription.value += result.transcript + " "
+                    }
+                }
+            _isLoading.value = false
+        }
+    }
 }

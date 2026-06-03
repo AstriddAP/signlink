@@ -88,7 +88,7 @@
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/card_communicate"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="160dp"
                     android:layout_margin="8dp"
                     android:layout_weight="1"
                     android:clickable="true"
@@ -98,10 +98,10 @@
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:gravity="center"
                         android:orientation="vertical"
-                        android:padding="20dp">
+                        android:padding="12dp">
 
                         <com.google.android.material.card.MaterialCardView
                             android:layout_width="48dp"
@@ -122,26 +122,28 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
+                            android:layout_marginTop="8dp"
+                            android:gravity="center"
                             android:text="@string/chat_title"
                             android:textColor="@color/on_surface"
-                            android:textSize="18sp"
+                            android:textSize="17sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:gravity="center"
                             android:text="@string/menu_communicate"
                             android:textColor="@color/on_surface_variant"
-                            android:textSize="14sp" />
+                            android:textSize="13sp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Tarjeta 2: Ubicación -->
+                <!-- Tarjeta 2: EMERGENCIA -->
                 <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/card_map"
+                    android:id="@+id/card_emergency"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="160dp"
                     android:layout_margin="8dp"
                     android:layout_weight="1"
                     android:clickable="true"
@@ -151,15 +153,15 @@
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:gravity="center"
                         android:orientation="vertical"
-                        android:padding="20dp">
+                        android:padding="12dp">
 
                         <com.google.android.material.card.MaterialCardView
                             android:layout_width="48dp"
                             android:layout_height="48dp"
-                            app:cardBackgroundColor="@color/card_purple_light"
+                            app:cardBackgroundColor="#F3E8FF"
                             app:cardCornerRadius="24dp"
                             app:cardElevation="0dp">
 
@@ -169,39 +171,41 @@
                                 android:layout_gravity="center"
                                 android:contentDescription="@string/location_title"
                                 android:src="@drawable/ic_map"
-                                app:tint="#8B5CF6" />
+                                app:tint="#9333EA" />
                         </com.google.android.material.card.MaterialCardView>
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
+                            android:layout_marginTop="8dp"
+                            android:gravity="center"
                             android:text="@string/location_title"
                             android:textColor="@color/on_surface"
-                            android:textSize="18sp"
+                            android:textSize="17sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:gravity="center"
                             android:text="@string/location_subtitle"
                             android:textColor="@color/on_surface_variant"
-                            android:textSize="14sp" />
+                            android:textSize="13sp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
-            <!-- Fila 2: Subtítulos y Documentos -->
+            <!-- Fila 2: Modo Escucha y Transcriptor -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <!-- Tarjeta 3: Subtítulos -->
+                <!-- Tarjeta 3: Modo Escucha -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/card_captions"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="160dp"
                     android:layout_margin="8dp"
                     android:layout_weight="1"
                     android:clickable="true"
@@ -211,10 +215,10 @@
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:gravity="center"
                         android:orientation="vertical"
-                        android:padding="20dp">
+                        android:padding="12dp">
 
                         <com.google.android.material.card.MaterialCardView
                             android:layout_width="48dp"
@@ -235,26 +239,28 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
+                            android:layout_marginTop="8dp"
+                            android:gravity="center"
                             android:text="@string/captions_title"
                             android:textColor="@color/on_surface"
-                            android:textSize="18sp"
+                            android:textSize="17sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:gravity="center"
                             android:text="@string/captions_subtitle"
                             android:textColor="@color/on_surface_variant"
-                            android:textSize="14sp" />
+                            android:textSize="13sp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Tarjeta 4: Documentos -->
+                <!-- Tarjeta 4: Transcriptor WhatsApp -->
                 <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/card_documents"
+                    android:id="@+id/card_audio_transcriber"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="160dp"
                     android:layout_margin="8dp"
                     android:layout_weight="1"
                     android:clickable="true"
@@ -264,15 +270,15 @@
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:gravity="center"
                         android:orientation="vertical"
-                        android:padding="20dp">
+                        android:padding="12dp">
 
                         <com.google.android.material.card.MaterialCardView
                             android:layout_width="48dp"
                             android:layout_height="48dp"
-                            app:cardBackgroundColor="@color/card_blue_light"
+                            app:cardBackgroundColor="#DCFCE7"
                             app:cardCornerRadius="24dp"
                             app:cardElevation="0dp">
 
@@ -280,41 +286,43 @@
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
                                 android:layout_gravity="center"
-                                android:contentDescription="Mis Documentos"
-                                android:src="@android:drawable/ic_menu_save"
-                                app:tint="@color/primary" />
+                                android:contentDescription="@string/audio_transcriber_title"
+                                android:src="@android:drawable/stat_sys_headset"
+                                app:tint="#16A34A" />
                         </com.google.android.material.card.MaterialCardView>
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
-                            android:text="Documentos"
+                            android:layout_marginTop="8dp"
+                            android:gravity="center"
+                            android:text="@string/audio_transcriber_title"
                             android:textColor="@color/on_surface"
-                            android:textSize="18sp"
+                            android:textSize="17sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="DNI y archivos"
+                            android:gravity="center"
+                            android:text="@string/audio_transcriber_subtitle"
                             android:textColor="@color/on_surface_variant"
-                            android:textSize="14sp" />
+                            android:textSize="13sp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
-            <!-- Fila 3: Notas y IA Explica -->
+            <!-- Fila 3: Diccionario LSP e IA Explica -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <!-- Tarjeta 5: Notas Seguras -->
+                <!-- Tarjeta 5: Diccionario LSP -->
                 <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/card_notes"
+                    android:id="@+id/card_visual_dictionary"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="160dp"
                     android:layout_margin="8dp"
                     android:layout_weight="1"
                     android:clickable="true"
@@ -324,15 +332,15 @@
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:gravity="center"
                         android:orientation="vertical"
-                        android:padding="20dp">
+                        android:padding="12dp">
 
                         <com.google.android.material.card.MaterialCardView
                             android:layout_width="48dp"
                             android:layout_height="48dp"
-                            app:cardBackgroundColor="@color/card_purple_light"
+                            app:cardBackgroundColor="#F3E8FF"
                             app:cardCornerRadius="24dp"
                             app:cardElevation="0dp">
 
@@ -340,26 +348,28 @@
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
                                 android:layout_gravity="center"
-                                android:contentDescription="Notas Seguras"
-                                android:src="@android:drawable/ic_lock_idle_lock"
-                                app:tint="#8B5CF6" />
+                                android:contentDescription="@string/visual_dictionary_title"
+                                android:src="@android:drawable/ic_menu_gallery"
+                                app:tint="#9333EA" />
                         </com.google.android.material.card.MaterialCardView>
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
-                            android:text="Notas"
+                            android:layout_marginTop="8dp"
+                            android:gravity="center"
+                            android:text="@string/visual_dictionary_title"
                             android:textColor="@color/on_surface"
-                            android:textSize="18sp"
+                            android:textSize="17sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="PIN y claves"
+                            android:gravity="center"
+                            android:text="@string/visual_dictionary_subtitle"
                             android:textColor="@color/on_surface_variant"
-                            android:textSize="14sp" />
+                            android:textSize="13sp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -367,7 +377,7 @@
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/card_ai_explanation"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="160dp"
                     android:layout_margin="8dp"
                     android:layout_weight="1"
                     android:clickable="true"
@@ -377,10 +387,10 @@
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:gravity="center"
                         android:orientation="vertical"
-                        android:padding="20dp">
+                        android:padding="12dp">
 
                         <com.google.android.material.card.MaterialCardView
                             android:layout_width="48dp"
@@ -393,7 +403,7 @@
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
                                 android:layout_gravity="center"
-                                android:contentDescription="Simplificador IA"
+                                android:contentDescription="@string/ai_explain_title"
                                 android:src="@android:drawable/ic_menu_view"
                                 app:tint="#0284C7" />
                         </com.google.android.material.card.MaterialCardView>
@@ -401,87 +411,24 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
-                            android:text="IA Explica"
+                            android:layout_marginTop="8dp"
+                            android:gravity="center"
+                            android:text="@string/ai_explain_title"
                             android:textColor="@color/on_surface"
-                            android:textSize="18sp"
+                            android:textSize="17sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Resume mensajes"
+                            android:gravity="center"
+                            android:text="@string/ai_explain_subtitle"
                             android:textColor="@color/on_surface_variant"
-                            android:textSize="14sp" />
+                            android:textSize="13sp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
-            <!-- Fila 4: Grabar Video -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <!-- Tarjeta 8: Video con Subtítulos -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/card_video_capture"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="8dp"
-                    android:layout_weight="0.5"
-                    android:clickable="true"
-                    android:focusable="true"
-                    app:cardCornerRadius="24dp"
-                    app:cardElevation="2dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:orientation="vertical"
-                        android:padding="20dp">
-
-                        <com.google.android.material.card.MaterialCardView
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            app:cardBackgroundColor="#FCE7F3"
-                            app:cardCornerRadius="24dp"
-                            app:cardElevation="0dp">
-
-                            <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
-                                android:layout_gravity="center"
-                                android:contentDescription="Video Subtítulos"
-                                android:src="@android:drawable/ic_menu_camera"
-                                app:tint="#DB2777" />
-                        </com.google.android.material.card.MaterialCardView>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
-                            android:text="Grabar Video"
-                            android:textColor="@color/on_surface"
-                            android:textSize="18sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Con subtítulos"
-                            android:textColor="@color/on_surface_variant"
-                            android:textSize="14sp" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:layout_margin="8dp"
-                    android:layout_weight="0.5" />
-            </LinearLayout>
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
