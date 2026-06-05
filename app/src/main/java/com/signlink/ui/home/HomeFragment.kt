@@ -64,6 +64,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         binding.cardAiExplanation.setOnClickListener {
             findNavController().navigate(R.id.nav_ai_explanation)
         }
+
+        // Tarjeta 6: Diccionario de Señas
+        binding.cardDictionary.setOnClickListener {
+            findNavController().navigate(R.id.nav_dictionary)
+        }
         
         binding.cardProfileImage.setOnClickListener {
             findNavController().navigate(R.id.nav_settings)

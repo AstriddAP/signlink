@@ -77,4 +77,10 @@
             app:argType="string" />
     </fragment>
 
+    <fragment
+        android:id="@+id/nav_dictionary"
+        android:name="com.signlink.ui.dictionary.DictionaryFragment"
+        android:label="@string/visual_dictionary_title"
+        tools:layout="@layout/fragment_dictionary" />
+
 </navigation>

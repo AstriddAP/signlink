@@ -63,7 +63,8 @@ class MainActivity : AppCompatActivity() {
             setOf(
                 R.id.nav_home, R.id.nav_communicate,
                 R.id.nav_live_captioning, R.id.nav_settings,
-                R.id.nav_ai_explanation, R.id.nav_audio_transcription
+                R.id.nav_ai_explanation, R.id.nav_audio_transcription,
+                R.id.nav_dictionary
             ), binding.drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
