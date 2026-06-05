@@ -97,9 +97,13 @@ class LiveCaptioningViewModel @Inject constructor(
         }
     }
 
-    private fun startRecording() {
+    private var recordingJob: kotlinx.coroutines.Job? = null
+
+    fun startRecording() {
+        if (_isRecording.value) return
         _isRecording.value = true
-        viewModelScope.launch {
+        recordingJob?.cancel()
+        recordingJob = viewModelScope.launch {
             speechRepository.startStreamingRecognition().collect { result ->
                 val speakerColor = when (result.speakerTag) {
                     1 -> "#FF5252" // Rojo
@@ -161,8 +165,10 @@ class LiveCaptioningViewModel @Inject constructor(
         }
     }
 
-    private fun stopRecording() {
+    fun stopRecording() {
         _isRecording.value = false
+        recordingJob?.cancel()
+        recordingJob = null
     }
 
     data class Caption(

@@ -239,12 +239,31 @@ class LiveCaptioningFragment : Fragment() {
                 Log.e("LiveCaptioning", "Error al iniciar cámara", exc)
             }
         }, ContextCompat.getMainExecutor(requireContext()))
+        
+        viewModel.startRecording()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val hasAudioPermission = ContextCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.RECORD_AUDIO
+        ) == PackageManager.PERMISSION_GRANTED
+        if (hasAudioPermission) {
+            viewModel.startRecording()
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        viewModel.stopRecording()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         autoCaptureJob?.cancel()
         cameraExecutor.shutdown()
+        viewModel.stopRecording()
         _binding = null
     }
 
@@ -332,46 +351,12 @@ fun CaptioningScreen(viewModel: LiveCaptioningViewModel, onTakePhoto: () -> Unit
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 110.dp, start = 16.dp, end = 16.dp),
+                .padding(bottom = 24.dp, start = 16.dp, end = 16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
             contentPadding = PaddingValues(bottom = 16.dp)
         ) {
             items(captions) { caption ->
                 CaptionCard(caption)
-            }
-        }
-
-        // Botones de control
-        Row(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 32.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Botón para análisis profundo (IA Backend)
-            FloatingActionButton(
-                onClick = { onTakePhoto() },
-                containerColor = MaterialTheme.colorScheme.tertiary,
-                shape = CircleShape
-            ) {
-                Icon(
-                    imageVector = Icons.Default.CameraAlt,
-                    contentDescription = "Analizar con IA",
-                    tint = ComposeColor.White
-                )
-            }
-
-            FloatingActionButton(
-                onClick = { viewModel.toggleRecording() },
-                containerColor = if (isRecording) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
-                shape = CircleShape
-            ) {
-                Icon(
-                    imageVector = if (isRecording) Icons.Default.Stop else Icons.Default.Mic,
-                    contentDescription = null,
-                    tint = ComposeColor.White
-                )
             }
         }
     }
