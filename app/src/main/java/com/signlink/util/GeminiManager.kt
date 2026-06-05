@@ -48,9 +48,13 @@ class GeminiManager @Inject constructor() {
     suspend fun correctMessage(text: String): String? = withContext(Dispatchers.IO) {
         try {
             val prompt = """
-                Actúa como un corrector ortográfico y gramatical experto.
-                Corrige el siguiente texto manteniendo su sentido original pero mejorando la redacción y ortografía.
-                Si el texto ya es correcto, devuélvelo tal cual.
+                Actúa como un corrector ortográfico y gramatical experto en español.
+                Toma el siguiente texto de voz transcrita (que no tiene signos de puntuación) y:
+                1. Añade los signos de puntuación adecuados (puntos, comas, signos de interrogación/exclamación).
+                2. Corrige cualquier error de ortografía o gramática.
+                3. Respeta las mayúsculas al inicio de las oraciones.
+                
+                Devuelve únicamente el texto corregido, sin ningún tipo de introducción, explicación ni formato extra.
                 
                 Texto a corregir:
                 $text

@@ -73,7 +73,10 @@ class AudioTranscriptionViewModel @Inject constructor(
                         if (_transcription.value.startsWith("Error")) {
                             _transcription.value = ""
                         }
-                        _transcription.value += result.transcript + " "
+                        // Procesamos el segmento de voz finalizado con Gemini para puntuarlo en segundo plano
+                        val punctuatedText = geminiManager.correctMessage(result.transcript)
+                        val textToAppend = punctuatedText ?: result.transcript
+                        _transcription.value += textToAppend.trim() + " "
                     }
                 }
             _isLoading.value = false

@@ -77,10 +77,4 @@
             app:argType="string" />
     </fragment>
 
-    <fragment
-        android:id="@+id/nav_visual_dictionary"
-        android:name="com.signlink.ui.dictionary.VisualDictionaryFragment"
-        android:label="Diccionario LSP"
-        tools:layout="@layout/fragment_visual_dictionary" />
-
 </navigation>

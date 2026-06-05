@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:background="?android:attr/windowBackground">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -17,13 +17,16 @@
             android:text="@string/settings_title"
             android:textSize="28sp"
             android:textStyle="bold"
-            android:textColor="@color/on_surface"
+            android:textColor="?attr/colorOnSurface"
             android:layout_marginBottom="24dp"/>
 
         <!-- Información de Usuario -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:cardBackgroundColor="?attr/colorSurface"
+            app:strokeColor="?attr/colorSurfaceVariant"
+            app:strokeWidth="1dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="2dp"
             android:layout_marginBottom="24dp">
@@ -75,6 +78,9 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:cardBackgroundColor="?attr/colorSurface"
+            app:strokeColor="?attr/colorSurfaceVariant"
+            app:strokeWidth="1dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="2dp">
 
@@ -90,12 +96,12 @@
                     android:layout_height="wrap_content"
                     android:text="@string/label_dark_mode"
                     android:textSize="16sp"
-                    android:textColor="@color/on_surface" />
+                    android:textColor="?attr/colorOnSurface" />
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="#DDDDDD"
+                    android:background="?attr/colorSurfaceVariant"
                     android:layout_marginTop="16dp"
                     android:layout_marginBottom="16dp"/>
 

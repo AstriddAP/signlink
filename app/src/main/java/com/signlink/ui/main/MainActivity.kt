@@ -28,6 +28,15 @@ class MainActivity : AppCompatActivity() {
     private val authViewModel: AuthViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Cargar y aplicar de inmediato el modo oscuro guardado antes de inflar layouts
+        val prefs = getSharedPreferences("signlink_prefs", android.content.Context.MODE_PRIVATE)
+        val isDarkMode = prefs.getBoolean("dark_mode", false)
+        if (isDarkMode) {
+            androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES)
+        } else {
+            androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO)
+        }
+
         super.onCreate(savedInstanceState)
         
         // Debug API Key
@@ -53,7 +62,8 @@ class MainActivity : AppCompatActivity() {
         appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.nav_home, R.id.nav_communicate,
-                R.id.nav_live_captioning, R.id.nav_settings
+                R.id.nav_live_captioning, R.id.nav_settings,
+                R.id.nav_ai_explanation, R.id.nav_audio_transcription
             ), binding.drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
@@ -64,11 +74,34 @@ class MainActivity : AppCompatActivity() {
         val navName = headerView.findViewById<android.widget.TextView>(R.id.nav_header_name)
         val navEmail = headerView.findViewById<android.widget.TextView>(R.id.nav_header_email)
 
+        // Inicializar inmediatamente con los datos locales del usuario logueado en Firebase Auth
+        val currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            val name = currentUser.displayName
+            val email = currentUser.email
+            navName.text = if (!name.isNullOrEmpty()) name else email?.substringBefore("@") ?: "Usuario"
+            navEmail.text = email ?: ""
+        } else {
+            navName.text = "SignLink User"
+            navEmail.text = "user@signlink.com"
+        }
+
         lifecycleScope.launch {
             authViewModel.userProfile.collectLatest { user ->
-                user?.let {
-                    navName.text = it.displayName
-                    navEmail.text = it.email
+                if (user != null) {
+                    navName.text = if (user.displayName.isNotEmpty()) user.displayName else user.email.substringBefore("@")
+                    navEmail.text = user.email
+                } else {
+                    val firebaseUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+                    if (firebaseUser != null) {
+                        val name = firebaseUser.displayName
+                        val email = firebaseUser.email
+                        navName.text = if (!name.isNullOrEmpty()) name else email?.substringBefore("@") ?: "Usuario"
+                        navEmail.text = email ?: ""
+                    } else {
+                        navName.text = "SignLink User"
+                        navEmail.text = "user@signlink.com"
+                    }
                 }
             }
         }
@@ -92,6 +125,14 @@ class MainActivity : AppCompatActivity() {
                         .build())
                     true
                 }
+                R.id.nav_home -> {
+                    binding.drawerLayout.closeDrawers()
+                    navController.navigate(R.id.nav_home, null, NavOptions.Builder()
+                        .setPopUpTo(R.id.nav_graph, true)
+                        .setLaunchSingleTop(true)
+                        .build())
+                    true
+                }
                 else -> {
                     val handled = androidx.navigation.ui.NavigationUI.onNavDestinationSelected(menuItem, navController)
                     if (handled) binding.drawerLayout.closeDrawers()
@@ -108,8 +149,20 @@ class MainActivity : AppCompatActivity() {
                 binding.drawerLayout.setDrawerLockMode(androidx.drawerlayout.widget.DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
             } else {
                 binding.appBarMain.toolbar.visibility = View.VISIBLE
-                binding.appBarMain.contentMain.bottomNav.visibility = View.VISIBLE
+                binding.appBarMain.contentMain.bottomNav.visibility = View.GONE
                 binding.drawerLayout.setDrawerLockMode(androidx.drawerlayout.widget.DrawerLayout.LOCK_MODE_UNLOCKED)
+
+                // Actualizar info del drawer al navegar a pantallas internas
+                val firebaseUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+                if (firebaseUser != null) {
+                    val name = firebaseUser.displayName
+                    val email = firebaseUser.email
+                    navName.text = if (!name.isNullOrEmpty()) name else email?.substringBefore("@") ?: "Usuario"
+                    navEmail.text = email ?: ""
+                } else {
+                    navName.text = "SignLink User"
+                    navEmail.text = "user@signlink.com"
+                }
             }
         }
 
@@ -132,6 +185,8 @@ class MainActivity : AppCompatActivity() {
                     putString("audio_uri", uri.toString())
                 }
                 navController.navigate(R.id.nav_audio_transcription, bundle)
+                // Limpiar la acción del intent para evitar re-lanzamientos en recreaciones
+                intent.action = null
             }
         }
     }

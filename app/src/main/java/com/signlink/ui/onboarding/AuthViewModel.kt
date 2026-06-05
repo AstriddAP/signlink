@@ -124,6 +124,7 @@ class AuthViewModel @Inject constructor(
                             displayName = email.substringBefore("@")
                         )
                         userRepository.saveUserProfile(user)
+                        _userProfile.value = user
                         _authState.value = AuthState.Success(authResult)
                     },
                     onFailure = { _authState.value = AuthState.Error(it.message ?: "Registration failed") }

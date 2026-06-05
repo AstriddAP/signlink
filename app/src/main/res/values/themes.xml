@@ -7,6 +7,12 @@
         <item name="colorOnSecondary">@color/on_secondary</item>
         <item name="android:navigationBarColor">@color/white</item>
         <item name="android:windowBackground">@color/background</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/on_surface</item>
+        <item name="colorOnSurfaceVariant">@color/on_surface_variant</item>
+        <item name="colorSurfaceVariant">@color/gray_100</item>
+        <item name="colorPrimaryContainer">#E3F2FD</item>
+        <item name="colorOnPrimaryContainer">@color/primary_variant</item>
     </style>
 
     <style name="Theme.SignLink" parent="Base.Theme.SignLink" />

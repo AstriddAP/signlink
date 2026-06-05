@@ -64,11 +64,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         binding.cardAiExplanation.setOnClickListener {
             findNavController().navigate(R.id.nav_ai_explanation)
         }
-
-        // Tarjeta 6: Diccionario LSP
-        binding.cardVisualDictionary.setOnClickListener {
-            findNavController().navigate(R.id.nav_visual_dictionary)
-        }
         
         binding.cardProfileImage.setOnClickListener {
             findNavController().navigate(R.id.nav_settings)

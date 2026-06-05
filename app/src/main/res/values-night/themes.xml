@@ -2,19 +2,21 @@
     <!-- Base application theme para Modo Oscuro -->
     <style name="Base.Theme.SignLink" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Colores Principales -->
-        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimary">#5C8AFF</item>
         <item name="colorOnPrimary">@color/white</item>
         <item name="colorSecondary">@color/secondary</item>
 
         <!-- Fondos y Superficies para Modo Oscuro -->
-        <item name="android:windowBackground">#12141C</item>
-        <item name="colorSurface">#1E222D</item>
-        <item name="colorOnSurface">#FFFFFF</item>
-        <item name="colorOnSurfaceVariant">#B0B3B8</item>
-        <item name="android:navigationBarColor">#12141C</item>
+        <item name="android:windowBackground">@color/dark_blue_bg</item>
+        <item name="colorSurface">@color/dark_blue_surface</item>
+        <item name="colorOnSurface">@color/white</item>
+        <item name="colorOnSurfaceVariant">#B0B8D0</item>
+        <item name="android:navigationBarColor">@color/dark_blue_bg</item>
 
         <!-- Colores de Tarjetas Adaptados para Oscuro -->
-        <item name="colorSurfaceVariant">#252936</item>
+        <item name="colorSurfaceVariant">@color/dark_blue_surface_variant</item>
+        <item name="colorPrimaryContainer">#1E2942</item>
+        <item name="colorOnPrimaryContainer">@color/white</item>
     </style>
 
     <style name="Theme.SignLink" parent="Base.Theme.SignLink" />

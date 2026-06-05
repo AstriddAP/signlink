@@ -26,4 +26,9 @@
     <color name="white">#FFFFFFFF</color>
     <color name="gray_100">#F3F4F6</color>
     <color name="gray_200">#E5E7EB</color>
+
+    <!-- Dark Mode Colors -->
+    <color name="dark_blue_bg">#0A0F24</color>
+    <color name="dark_blue_surface">#1A233D</color>
+    <color name="dark_blue_surface_variant">#2E3A5F</color>
 </resources>

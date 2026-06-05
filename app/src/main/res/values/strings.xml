@@ -39,7 +39,7 @@
     <string name="captions_subtitle">En vivo</string>
     <string name="audio_transcriber_title">Transcriptor</string>
     <string name="audio_transcriber_subtitle">Audios de WhatsApp</string>
-    <string name="visual_dictionary_title">Diccionario LSP</string>
+    <string name="visual_dictionary_title">Diccionario de Señas</string>
     <string name="visual_dictionary_subtitle">Gifs de señas</string>
     <string name="ai_explain_title">IA Explica</string>
     <string name="ai_explain_subtitle">Resume mensajes</string>
