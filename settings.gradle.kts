@@ -22,6 +22,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "signlink"
+rootProject.name = "talky"
 include(":app")
  

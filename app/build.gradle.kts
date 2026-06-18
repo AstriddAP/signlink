@@ -37,11 +37,11 @@ android {
     val dbPassphrase: String = localProperties.getProperty("DB_PASSPHRASE") ?: "clave_segura_signlink_2024"
 
     defaultConfig {
-        applicationId = "com.signlink"
+        applicationId = "com.talkyapp.pe"
         minSdk = 28
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 4
+        versionName = "1.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

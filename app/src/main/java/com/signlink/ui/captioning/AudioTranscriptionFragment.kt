@@ -1,13 +1,17 @@
 package com.signlink.ui.captioning
 
+import android.Manifest
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -24,6 +28,16 @@ class AudioTranscriptionFragment : Fragment() {
     private var _binding: FragmentAudioTranscriptionBinding? = null
     private val binding get() = _binding!!
     private val viewModel: AudioTranscriptionViewModel by viewModels()
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            viewModel.startLiveTranscription()
+        } else {
+            Toast.makeText(context, "Permiso de micrófono requerido para transcribir", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -62,8 +76,15 @@ class AudioTranscriptionFragment : Fragment() {
 
     private fun setupListeners() {
         binding.btnRecord.setOnClickListener {
-            // Lógica para iniciar reconocimiento de voz directo
-            viewModel.startLiveTranscription()
+            if (ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.RECORD_AUDIO
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                viewModel.startLiveTranscription()
+            } else {
+                requestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+            }
         }
 
         binding.btnCopy.setOnClickListener {

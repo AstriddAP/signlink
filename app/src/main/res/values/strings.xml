@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">SignLink</string>
+    <string name="app_name">Talky</string>
     <string name="slogan">Conectando sin barreras</string>
     <string name="accessibility_footer">Accesibilidad para todos</string>
     <string name="welcome_title">Bienvenido</string>
@@ -53,8 +53,8 @@
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="nav_header_title">SignLink User</string>
-    <string name="nav_header_subtitle">user@signlink.com</string>
+    <string name="nav_header_title">Talky User</string>
+    <string name="nav_header_subtitle">user@talky.com</string>
     <string name="nav_header_desc">User profile picture</string>
 
     <string name="settings_title">Ajustes de Perfil</string>

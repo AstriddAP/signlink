@@ -123,7 +123,10 @@ class AuthViewModel @Inject constructor(
                             email = email,
                             displayName = email.substringBefore("@")
                         )
-                        userRepository.saveUserProfile(user)
+                        // Lanzamos el guardado de perfil de forma asíncrona para que no bloquee el registro
+                        viewModelScope.launch {
+                            userRepository.saveUserProfile(user)
+                        }
                         _userProfile.value = user
                         _authState.value = AuthState.Success(authResult)
                     },

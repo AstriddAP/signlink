@@ -1,13 +1,21 @@
 package com.signlink.ui.home
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.location.Location
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.google.android.gms.location.Priority
 import com.signlink.R
 import com.signlink.databinding.FragmentHomeBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -21,6 +29,18 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private val binding get() = _binding!!
     
     private val viewModel: HomeViewModel by viewModels()
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+            permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        ) {
+            getAndSendLocation()
+        } else {
+            Toast.makeText(requireContext(), "Permiso de ubicación denegado", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -76,31 +96,67 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun sendEmergencyLocation() {
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            getAndSendLocation()
+        } else {
+            requestPermissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun getAndSendLocation() {
         val fusedLocationClient = com.google.android.gms.location.LocationServices.getFusedLocationProviderClient(requireActivity())
-        try {
-            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-                if (location != null) {
-                    val uri = "https://maps.google.com/?q=${location.latitude},${location.longitude}"
-                    val message = "¡EMERGENCIA! Necesito ayuda. Mi ubicación actual es: $uri"
-                    val intent = android.content.Intent(android.content.Intent.ACTION_SEND)
-                    intent.type = "text/plain"
-                    intent.setPackage("com.whatsapp")
-                    intent.putExtra(android.content.Intent.EXTRA_TEXT, message)
-                    
-                    try {
-                        startActivity(intent)
-                    } catch (e: Exception) {
-                        Toast.makeText(requireContext(), "WhatsApp no está instalado", Toast.LENGTH_SHORT).show()
-                        // Fallback sharing
-                        val shareIntent = android.content.Intent.createChooser(intent, "Enviar ubicación de emergencia")
-                        startActivity(shareIntent)
+        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+            if (location != null) {
+                shareLocationText(location)
+            } else {
+                // Si la última ubicación es nula, solicitamos una actualización en tiempo real
+                val locationRequest = com.google.android.gms.location.LocationRequest.Builder(
+                    Priority.PRIORITY_HIGH_ACCURACY, 1000
+                ).setMaxUpdates(1).build()
+                
+                fusedLocationClient.requestLocationUpdates(locationRequest, object : com.google.android.gms.location.LocationCallback() {
+                    override fun onLocationResult(result: com.google.android.gms.location.LocationResult) {
+                        val lastLoc = result.lastLocation
+                        if (lastLoc != null) {
+                            shareLocationText(lastLoc)
+                        } else {
+                            Toast.makeText(requireContext(), "No se pudo obtener la ubicación actual. Verifica tu GPS.", Toast.LENGTH_SHORT).show()
+                        }
                     }
-                } else {
-                    Toast.makeText(requireContext(), "No se pudo obtener la ubicación. Verifica tu GPS.", Toast.LENGTH_SHORT).show()
-                }
+                }, android.os.Looper.getMainLooper())
             }
-        } catch (e: SecurityException) {
-            Toast.makeText(requireContext(), "Permiso de ubicación denegado", Toast.LENGTH_SHORT).show()
+        }.addOnFailureListener {
+            Toast.makeText(requireContext(), "Error al obtener ubicación: ${it.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun shareLocationText(location: Location) {
+        val uri = "https://maps.google.com/?q=${location.latitude},${location.longitude}"
+        val message = "¡EMERGENCIA! Necesito ayuda. Mi ubicación actual es: $uri"
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            setPackage("com.whatsapp")
+            putExtra(Intent.EXTRA_TEXT, message)
+        }
+        try {
+            startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(requireContext(), "WhatsApp no está instalado", Toast.LENGTH_SHORT).show()
+            val shareIntent = Intent.createChooser(intent, "Enviar ubicación de emergencia")
+            startActivity(shareIntent)
         }
     }
 
