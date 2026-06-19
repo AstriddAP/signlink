@@ -48,13 +48,13 @@
             app:layout_constraintTop_toBottomOf="@+id/tv_welcome_title" />
 
         <com.google.android.material.card.MaterialCardView
-            android:id="@+id/card_profile_image"
+            android:id="@+id/card_emergency"
             android:layout_width="56dp"
             android:layout_height="56dp"
             android:layout_marginEnd="24dp"
-            app:cardBackgroundColor="#2A4CB0"
+            app:cardBackgroundColor="#D32F2F"
             app:cardCornerRadius="28dp"
-            app:cardElevation="0dp"
+            app:cardElevation="2dp"
             app:layout_constraintBottom_toBottomOf="@+id/tv_profile_mode"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/tv_welcome_title">
@@ -62,9 +62,9 @@
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:contentDescription="@string/nav_header_desc"
-                android:padding="8dp"
-                android:src="@drawable/ic_settings"
+                android:contentDescription="Botón de alerta de emergencia rápida"
+                android:padding="12dp"
+                android:src="@android:drawable/ic_dialog_alert"
                 app:tint="@color/white" />
         </com.google.android.material.card.MaterialCardView>
 
@@ -142,9 +142,9 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Tarjeta 2: EMERGENCIA -->
+                <!-- Tarjeta 2: SERVICIOS CERCANOS (MAPA) -->
                 <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/card_emergency"
+                    android:id="@+id/card_map"
                     android:layout_width="0dp"
                     android:layout_height="160dp"
                     android:layout_margin="8dp"
@@ -175,7 +175,7 @@
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
                                 android:layout_gravity="center"
-                                android:contentDescription="@string/location_title"
+                                android:contentDescription="Mapa de servicios cercanos"
                                 android:src="@drawable/ic_map"
                                 app:tint="#9333EA" />
                         </com.google.android.material.card.MaterialCardView>
@@ -185,7 +185,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
                             android:gravity="center"
-                            android:text="@string/location_title"
+                            android:text="Servicios Cercanos"
                             android:textColor="?attr/colorOnSurface"
                             android:textSize="17sp"
                             android:textStyle="bold" />
@@ -194,7 +194,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:gravity="center"
-                            android:text="@string/location_subtitle"
+                            android:text="Hospitales y bodegas"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             android:textSize="13sp" />
                     </LinearLayout>

@@ -1,24 +1,24 @@
 package com.signlink.ui.captioning
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.signlink.data.repository.IAAnalysisRepository
 import com.signlink.data.repository.SpeechRecognitionRepository
 import com.signlink.util.GeminiManager
 import com.signlink.util.TTSManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import android.util.Log
 
 @HiltViewModel
 class LiveCaptioningViewModel @Inject constructor(
     private val speechRepository: SpeechRecognitionRepository,
     private val geminiManager: GeminiManager,
-    private val ttsManager: TTSManager,
-    private val iaRepository: IAAnalysisRepository
+    private val ttsManager: TTSManager
 ) : ViewModel() {
 
     private val _captions = MutableStateFlow<List<Caption>>(emptyList())
@@ -27,14 +27,7 @@ class LiveCaptioningViewModel @Inject constructor(
     private val _isRecording = MutableStateFlow(false)
     val isRecording = _isRecording.asStateFlow()
 
-    private val _isProcessingIA = MutableStateFlow(false)
-    val isProcessingIA = _isProcessingIA.asStateFlow()
-
-    private val _predictions = MutableStateFlow<List<com.signlink.data.remote.Prediction>>(emptyList())
-    val predictions = _predictions.asStateFlow()
-
-    var lastImageWidth = 0
-    var lastImageHeight = 0
+    private var recordingJob: kotlinx.coroutines.Job? = null
 
     fun toggleRecording() {
         if (_isRecording.value) {
@@ -44,124 +37,114 @@ class LiveCaptioningViewModel @Inject constructor(
         }
     }
 
-    private val _errorMessage = MutableStateFlow<String?>(null)
-    val errorMessage = _errorMessage.asStateFlow()
-
-    fun onVisualDetection(text: String, isError: Boolean = false) {
-        if (isError) {
-            _errorMessage.value = text
-            return
-        }
-        
-        _errorMessage.value = null // Limpiar error si hubo éxito
-        val visualCaption = Caption(
-            text = text,
-            speaker = "LENS",
-            color = "#00E5FF"
-        )
-        // Evitar duplicados seguidos
-        if (_captions.value.lastOrNull()?.text != text) {
-            _captions.value = _captions.value.takeLast(20) + visualCaption
-            ttsManager.speak(text)
-        }
-    }
-
-    fun analizarImagenRemota(file: java.io.File, width: Int, height: Int) {
-        this.lastImageWidth = width
-        this.lastImageHeight = height
-        _isProcessingIA.value = true
-        _errorMessage.value = null 
-
-        viewModelScope.launch {
-            try {
-                iaRepository.analyzeImage(file).onSuccess { response ->
-                    val result = response.result
-                    val newPredictions = response.predictions ?: emptyList()
-                    _predictions.value = newPredictions
-
-                    if (!result.isNullOrBlank()) {
-                        onVisualDetection(result)
-                    }
-                }.onFailure { error ->
-                    _predictions.value = emptyList()
-                    val msg = when (error.message) {
-                        "LIMITE_ALCANZADO" -> "Cuota de IA agotada. Esperando..."
-                        "ERROR_SERVIDOR" -> "Servidor saturado. Reintentando..."
-                        else -> "Buscando conexión..."
-                    }
-                    onVisualDetection(msg, isError = true)
-                }
-            } finally {
-                _isProcessingIA.value = false
-            }
-        }
-    }
-
-    private var recordingJob: kotlinx.coroutines.Job? = null
-
     fun startRecording() {
         if (_isRecording.value) return
         _isRecording.value = true
         recordingJob?.cancel()
         recordingJob = viewModelScope.launch {
-            speechRepository.startStreamingRecognition().collect { result ->
-                val speakerColor = when (result.speakerTag) {
-                    1 -> "#FF5252" // Rojo
-                    2 -> "#448AFF" // Azul
-                    3 -> "#4CAF50" // Verde
-                    else -> "#FFEB3B" // Amarillo
-                }
+            while (_isRecording.value) {
+                try {
+                    speechRepository.startStreamingRecognition()
+                        .catch { error ->
+                            Log.e("LiveCaptioning", "Recognition error: ${error.message}")
+                            if (error.message?.contains("micrófono") == true || error.message?.contains("Permiso") == true) {
+                                _isRecording.value = false
+                                val errorCaption = Caption(
+                                    text = error.message ?: "Error al acceder al micrófono",
+                                    speaker = "Sistema",
+                                    color = "#FF5252",
+                                    isProcessing = false
+                                )
+                                _captions.value = _captions.value.takeLast(29) + errorCaption
+                            }
+                            delay(500)
+                        }
+                        .collect { result ->
+                            val transcriptText = result.transcript
+                            if (transcriptText.isBlank()) return@collect
 
-                val transcriptText = result.transcript
+                            val currentList = _captions.value.toMutableList()
 
-                val newCaption = Caption(
-                    text = transcriptText,
-                    speaker = if (result.speakerTag > 0) "Hablante ${result.speakerTag}" else "Voz detectada",
-                    color = speakerColor,
-                    isProcessing = !result.isFinal
-                )
+                            if (!result.isFinal) {
+                                // Mientras se habla, mostramos una burbuja provisional marcada como "Escuchando..."
+                                val tempCaption = Caption(
+                                    text = transcriptText,
+                                    speaker = "Escuchando...",
+                                    color = "#FFEB3B", // Amarillo
+                                    isProcessing = true
+                                )
+                                if (currentList.isNotEmpty() && currentList.last().isProcessing) {
+                                    currentList[currentList.size - 1] = tempCaption
+                                } else {
+                                    currentList.add(tempCaption)
+                                }
+                                _captions.value = currentList.takeLast(30)
+                            } else {
+                                // En cuanto se termina la frase, quitamos la provisional
+                                if (currentList.isNotEmpty() && currentList.last().isProcessing) {
+                                    currentList.removeAt(currentList.size - 1)
+                                }
 
-                val currentList = _captions.value.toMutableList()
-                
-                // Si el resultado es final, aplicamos el reconocimiento inteligente de números (Req. 2)
-                if (result.isFinal) {
-                    val finalCaption = newCaption.copy(isProcessing = false)
-                    currentList.add(finalCaption)
-                    _captions.value = currentList.takeLast(30)
+                                // Creamos una burbuja temporal "Procesando..." para indicar que la IA está diarizando
+                                val finalCaptionProvisional = Caption(
+                                    text = transcriptText,
+                                    speaker = "Procesando...",
+                                    color = "#CCCCCC", // Gris
+                                    isProcessing = false
+                                )
+                                currentList.add(finalCaptionProvisional)
+                                _captions.value = currentList.takeLast(30)
 
-                    viewModelScope.launch {
-                        // Forzamos el tipo String? explícitamente para evitar el error de 'Any'
-                        val formattedText: String? = geminiManager.formatNumbersInText(transcriptText)
-                        if (formattedText != null) {
-                            val updatedList = _captions.value.toMutableList()
-                            val index = updatedList.indexOf(finalCaption)
-                            if (index != -1) {
-                                // Ahora el compilador sabrá que formattedText es String
-                                updatedList[index] = finalCaption.copy(text = formattedText)
-                                _captions.value = updatedList
+                                // Ejecutamos la diarización contextual con Gemini asíncronamente
+                                viewModelScope.launch {
+                                    val historyText = _captions.value
+                                        .filter { it.speaker != "Procesando..." && it.speaker != "Escuchando..." }
+                                        .takeLast(10)
+                                        .joinToString("\n") { "${it.speaker}: ${it.text}" }
+
+                                    val diarized = geminiManager.diarizeSpeechSegment(historyText, transcriptText)
+                                    val updatedList = _captions.value.toMutableList()
+                                    val index = updatedList.indexOf(finalCaptionProvisional)
+                                    
+                                    if (index != -1) {
+                                        if (diarized != null) {
+                                            val colors = listOf(
+                                                "#FF5252", // Rojo/Coral
+                                                "#448AFF", // Azul
+                                                "#4CAF50", // Verde
+                                                "#9C27B0", // Morado
+                                                "#FF9800", // Naranja
+                                                "#E91E63", // Rosa
+                                                "#00BCD4"  // Celeste
+                                            )
+                                            val colorIndex = java.lang.Math.abs(diarized.speaker.hashCode()) % colors.size
+                                            val speakerColor = colors[colorIndex]
+                                            updatedList[index] = Caption(
+                                                text = diarized.text,
+                                                speaker = diarized.speaker,
+                                                color = speakerColor,
+                                                isProcessing = false
+                                            )
+                                        } else {
+                                            // Fallback: usar Hablante 1 si hay un fallo
+                                            updatedList[index] = Caption(
+                                                text = transcriptText,
+                                                speaker = "Hablante 1",
+                                                color = "#FF5252",
+                                                isProcessing = false
+                                            )
+                                        }
+                                        _captions.value = updatedList
+                                    }
+                                }
                             }
                         }
-                    }
-                    return@collect
+                } catch (e: Exception) {
+                    Log.e("LiveCaptioning", "Loop collection exception: ${e.message}")
+                    delay(500)
                 }
-
-                if (currentList.isNotEmpty() && !result.isFinal && currentList.last().speaker == newCaption.speaker) {
-                    currentList[currentList.size - 1] = newCaption
-                } else {
-                    currentList.add(newCaption)
-                }
-                
-                _captions.value = currentList.takeLast(30)
+                delay(300) // Pequeño respiro entre reinicios automáticos
             }
-        }
-    }
-
-    private fun updateFinalCaption(updatedCaption: Caption) {
-        val currentList = _captions.value.toMutableList()
-        val index = currentList.indexOfLast { it.speaker == updatedCaption.speaker && it.text.contains(updatedCaption.text.take(5)) }
-        if (index != -1) {
-            currentList[index] = updatedCaption
-            _captions.value = currentList
         }
     }
 
@@ -169,6 +152,10 @@ class LiveCaptioningViewModel @Inject constructor(
         _isRecording.value = false
         recordingJob?.cancel()
         recordingJob = null
+    }
+
+    fun stopTts() {
+        ttsManager.stop()
     }
 
     data class Caption(

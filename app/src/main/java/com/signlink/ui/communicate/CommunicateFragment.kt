@@ -1,22 +1,23 @@
 package com.signlink.ui.communicate
 
 import android.os.Bundle
-import android.speech.tts.TextToSpeech
 import android.view.View
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import com.signlink.R
 import com.signlink.data.model.Symbol
 import com.signlink.databinding.FragmentCommunicateBinding
+import com.signlink.util.TTSManager
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.*
+import javax.inject.Inject
 
 @AndroidEntryPoint
-class CommunicateFragment : Fragment(R.layout.fragment_communicate), TextToSpeech.OnInitListener {
+class CommunicateFragment : Fragment(R.layout.fragment_communicate) {
     private var _binding: FragmentCommunicateBinding? = null
     private val binding get() = _binding!!
-    private var tts: TextToSpeech? = null
+
+    @Inject
+    lateinit var ttsManager: TTSManager
     
     private lateinit var allPhrases: List<Symbol>
     private lateinit var symbolAdapter: SymbolAdapter
@@ -25,7 +26,6 @@ class CommunicateFragment : Fragment(R.layout.fragment_communicate), TextToSpeec
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentCommunicateBinding.bind(view)
         
-        tts = TextToSpeech(requireContext(), this)
         setupPhrasesData()
         setupSymbolsGrid()
         setupCategoryListeners()
@@ -148,22 +148,17 @@ class CommunicateFragment : Fragment(R.layout.fragment_communicate), TextToSpeec
 
     private fun speak(text: String) {
         if (text.isNotEmpty()) {
-            tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "")
+            ttsManager.speak(text)
         }
     }
 
-    override fun onInit(status: Int) {
-        if (status == TextToSpeech.SUCCESS) {
-            tts?.language = Locale("es", "ES")
-        } else {
-            Toast.makeText(context, "Error al iniciar TTS", Toast.LENGTH_SHORT).show()
-        }
+    override fun onPause() {
+        super.onPause()
+        ttsManager.stop()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        tts?.stop()
-        tts?.shutdown()
         _binding = null
     }
 }

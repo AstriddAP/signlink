@@ -4,20 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/black"
+    android:background="?android:attr/windowBackground"
     tools:context=".ui.captioning.LiveCaptioningFragment">
-
-    <!-- Simulación de Video / Cámara -->
-    <androidx.camera.view.PreviewView
-        android:id="@+id/viewFinder"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:background="@drawable/bottom_gradient"
-        app:layout_constraintBottom_toBottomOf="parent" />
 
     <androidx.compose.ui.platform.ComposeView
         android:id="@+id/compose_view"

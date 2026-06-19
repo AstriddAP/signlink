@@ -65,9 +65,14 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             findNavController().navigate(R.id.nav_communicate)
         }
 
-        // Tarjeta 2: Emergencia
+        // Cabecera: Emergencia Rápida (Comparte ubicación vía WhatsApp)
         binding.cardEmergency.setOnClickListener {
             sendEmergencyLocation()
+        }
+
+        // Tarjeta 2: Servicios Cercanos (abre Mapa de Servicios)
+        binding.cardMap.setOnClickListener {
+            findNavController().navigate(R.id.nav_map)
         }
 
         // Tarjeta 3: Modo Escucha
@@ -88,10 +93,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         // Tarjeta 6: Diccionario de Señas
         binding.cardDictionary.setOnClickListener {
             findNavController().navigate(R.id.nav_dictionary)
-        }
-        
-        binding.cardProfileImage.setOnClickListener {
-            findNavController().navigate(R.id.nav_settings)
         }
     }
 
@@ -145,7 +146,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private fun shareLocationText(location: Location) {
         val uri = "https://maps.google.com/?q=${location.latitude},${location.longitude}"
-        val message = "¡EMERGENCIA! Necesito ayuda. Mi ubicación actual es: $uri"
+        val message = "¡EMERGENCIA! Esta es mi ubicación, tengo algún problema: $uri"
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = "text/plain"
             setPackage("com.whatsapp")

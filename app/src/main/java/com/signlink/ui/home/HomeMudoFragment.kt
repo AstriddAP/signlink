@@ -1,7 +1,6 @@
 package com.signlink.ui.home
 
 import android.os.Bundle
-import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.view.View
 import android.widget.Toast
@@ -14,27 +13,28 @@ import com.signlink.R
 import com.signlink.data.model.Symbol
 import com.signlink.databinding.FragmentHomeMudoBinding
 import com.signlink.ui.communicate.SymbolAdapter
+import com.signlink.util.TTSManager
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.*
+import javax.inject.Inject
 
 /**
  * Dashboard principal para el perfil de Discapacidad del Habla (Mudo).
  * Incluye acceso rápido a símbolos AAC y síntesis de voz.
  */
 @AndroidEntryPoint
-class HomeMudoFragment : Fragment(R.layout.fragment_home_mudo), TextToSpeech.OnInitListener {
+class HomeMudoFragment : Fragment(R.layout.fragment_home_mudo) {
 
     private var _binding: FragmentHomeMudoBinding? = null
     private val binding get() = _binding!!
     
     private val viewModel: HomeMudoViewModel by viewModels()
-    private var tts: TextToSpeech? = null
+
+    @Inject
+    lateinit var ttsManager: TTSManager
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentHomeMudoBinding.bind(view)
-
-        tts = TextToSpeech(requireContext(), this)
         
         setupGreeting()
         setupRecentPhrases()
@@ -111,22 +111,17 @@ class HomeMudoFragment : Fragment(R.layout.fragment_home_mudo), TextToSpeech.OnI
     }
 
     private fun speak(text: String) {
-        tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "SignLinkTTS")
+        ttsManager.speak(text)
         Log.d("HomeMudoFragment", "Speaking: $text")
     }
 
-    override fun onInit(status: Int) {
-        if (status == TextToSpeech.SUCCESS) {
-            tts?.language = Locale("es", "ES")
-        } else {
-            Log.e("HomeMudoFragment", "TTS Initialization failed")
-        }
+    override fun onPause() {
+        super.onPause()
+        ttsManager.stop()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        tts?.stop()
-        tts?.shutdown()
         _binding = null
     }
 }

@@ -83,4 +83,10 @@
         android:label="@string/visual_dictionary_title"
         tools:layout="@layout/fragment_dictionary" />
 
+    <fragment
+        android:id="@+id/nav_map"
+        android:name="com.signlink.ui.map.MapFragment"
+        android:label="Mapa de Servicios"
+        tools:layout="@layout/fragment_map" />
+
 </navigation>

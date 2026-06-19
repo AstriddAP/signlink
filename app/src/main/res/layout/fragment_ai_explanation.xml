@@ -11,7 +11,7 @@
         android:id="@+id/tv_instructions"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Pega un texto largo o sube un archivo (PDF/Imagen) para obtener un resumen inteligente con audio."
+        android:text="Escribe un texto, sube un documento o foto, o ingresa una palabra difícil para que la IA te lo explique de manera muy sencilla y con audio."
         android:textColor="?attr/colorOnSurfaceVariant"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -21,7 +21,7 @@
         android:layout_width="match_parent"
         android:layout_height="200dp"
         android:layout_marginTop="16dp"
-        android:hint="Ingresa el texto aquí..."
+        android:hint="Ingresa el texto o la palabra aquí..."
         app:layout_constraintTop_toBottomOf="@id/tv_instructions">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -38,9 +38,10 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="4dp"
-        android:text="Resumir Texto"
+        android:text="Explicar Texto"
         android:textAllCaps="false"
         android:textSize="14sp"
+        android:contentDescription="Presiona para explicar y simplificar el texto que escribiste arriba"
         app:icon="@android:drawable/ic_menu_edit"
         app:layout_constraintEnd_toStartOf="@+id/btn_upload_file"
         app:layout_constraintStart_toStartOf="parent"
@@ -52,14 +53,30 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
-        android:text="Resumir Archivo"
+        android:text="Explicar Archivo"
         android:textAllCaps="false"
         android:textSize="14sp"
+        android:contentDescription="Presiona para subir un documento PDF o una foto para que la IA lo explique"
         app:icon="@android:drawable/stat_sys_upload"
         app:layout_constraintBottom_toBottomOf="@+id/btn_summarize"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/btn_summarize"
         app:layout_constraintTop_toTopOf="@+id/btn_summarize" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_define_word"
+        style="@style/Widget.Material3.Button.TonalButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Explicar palabra difícil"
+        android:textAllCaps="false"
+        android:textSize="14sp"
+        android:contentDescription="Escribe una sola palabra arriba y presiona este botón para ver qué significa con palabras simples"
+        app:icon="@android:drawable/ic_menu_help"
+        app:layout_constraintTop_toBottomOf="@id/btn_summarize"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_result"
@@ -73,7 +90,7 @@
         app:strokeColor="?attr/colorSurfaceVariant"
         app:strokeWidth="1dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btn_summarize">
+        app:layout_constraintTop_toBottomOf="@id/btn_define_word">
 
         <ScrollView
             android:layout_width="match_parent"
@@ -85,12 +102,54 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Resumen de la IA:"
-                    android:textColor="@color/primary"
-                    android:textStyle="bold" />
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="Resumen de la IA:"
+                        android:textColor="@color/primary"
+                        android:textStyle="bold" />
+
+                    <!-- Botón Repetir (Play) -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_repeat"
+                        style="@style/Widget.MaterialComponents.Button.TextButton.Icon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Repetir"
+                        android:contentDescription="Repetir en voz alta la explicación"
+                        app:icon="@android:drawable/ic_media_play"
+                        android:textSize="12sp"
+                        android:textColor="@color/primary"
+                        app:iconTint="@color/primary"
+                        android:padding="0dp"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"/>
+
+                    <!-- Botón Pausar (Stop) -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_pause"
+                        style="@style/Widget.MaterialComponents.Button.TextButton.Icon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="Pausar"
+                        android:contentDescription="Pausar o detener el audio de la explicación"
+                        app:icon="@android:drawable/ic_media_pause"
+                        android:textSize="12sp"
+                        android:textColor="@color/panic_red"
+                        app:iconTint="@color/panic_red"
+                        android:padding="0dp"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"/>
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/tv_simplified_result"
@@ -112,6 +171,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btn_summarize" />
+        app:layout_constraintTop_toBottomOf="@id/btn_define_word" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

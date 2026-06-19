@@ -51,6 +51,26 @@ class AiExplanationFragment : Fragment(R.layout.fragment_ai_explanation) {
         binding.btnUploadFile.setOnClickListener {
             filePickerLauncher.launch("*/*")
         }
+
+        binding.btnDefineWord.setOnClickListener {
+            val text = binding.etInputText.text.toString()
+            if (text.isNotBlank()) {
+                viewModel.defineWord(text)
+            } else {
+                showToast("Por favor ingresa una palabra difícil para explicar")
+            }
+        }
+
+        binding.btnRepeat.setOnClickListener {
+            val text = binding.tvSimplifiedResult.text.toString()
+            if (text.isNotBlank() && text != "Aquí aparecerá el resumen generado...") {
+                viewModel.speakText(text)
+            }
+        }
+
+        binding.btnPause.setOnClickListener {
+            viewModel.stopTts()
+        }
     }
 
     private fun processSelectedFile(uri: Uri) {
@@ -112,10 +132,16 @@ class AiExplanationFragment : Fragment(R.layout.fragment_ai_explanation) {
     private fun setButtonsEnabled(enabled: Boolean) {
         binding.btnSummarize.isEnabled = enabled
         binding.btnUploadFile.isEnabled = enabled
+        binding.btnDefineWord.isEnabled = enabled
     }
 
     private fun showToast(message: String) {
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        viewModel.stopTts()
     }
 
     override fun onDestroyView() {
