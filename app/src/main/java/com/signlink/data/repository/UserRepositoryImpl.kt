@@ -46,6 +46,49 @@ class UserRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun updateFcmToken(uid: String, token: String): Result<Unit> {
+        return try {
+            firestore.collection("users").document(uid).update("fcmToken", token).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun addContact(currentUserUid: String, contact: User): Result<Unit> {
+        return try {
+            firestore.collection("users").document(currentUserUid)
+                .collection("contacts").document(contact.uid).set(contact).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            if (e is kotlinx.coroutines.CancellationException) throw e
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun getContacts(currentUserUid: String): Result<List<User>> {
+        return try {
+            val snapshot = firestore.collection("users").document(currentUserUid)
+                .collection("contacts").get().await()
+            val list = snapshot.toObjects(User::class.java)
+            Result.success(list)
+        } catch (e: Exception) {
+            if (e is kotlinx.coroutines.CancellationException) throw e
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun deleteContact(currentUserUid: String, contactUid: String): Result<Unit> {
+        return try {
+            firestore.collection("users").document(currentUserUid)
+                .collection("contacts").document(contactUid).delete().await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            if (e is kotlinx.coroutines.CancellationException) throw e
+            Result.failure(e)
+        }
+    }
+
     override fun getLocalProfileType(): String? {
         return sharedPrefs.getString("profile_type", null)
     }

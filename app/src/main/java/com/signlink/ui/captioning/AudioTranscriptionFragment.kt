@@ -72,6 +72,13 @@ class AudioTranscriptionFragment : Fragment() {
                 binding.btnSimplifyIa.isEnabled = !loading
             }
         }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.translationTime.collectLatest { time ->
+                binding.tvTranslationTime.text = time
+                binding.tvTranslationTime.isVisible = time != null
+            }
+        }
     }
 
     private fun setupListeners() {

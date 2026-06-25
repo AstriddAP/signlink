@@ -163,6 +163,8 @@ dependencies {
     implementation(libs.mlkit.text.recognition)
     implementation(libs.mlkit.obj.detection)
     implementation(libs.mlkit.img.labeling)
+    implementation(libs.mlkit.barcode.scanning)
+    implementation(libs.zxing.core)
 
     implementation(libs.androidx.work.runtime.ktx)
 

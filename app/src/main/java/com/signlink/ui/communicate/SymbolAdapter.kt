@@ -35,7 +35,7 @@ class SymbolAdapter(
         RecyclerView.ViewHolder(binding.root) {
         
         fun bind(symbol: Symbol) {
-            binding.symbolName.text = symbol.name
+            binding.symbolName.text = symbol.textToSpeak
             
             // Accesibilidad: El nombre del símbolo es la descripción del contenido
             binding.root.contentDescription = "Símbolo de ${symbol.name}"

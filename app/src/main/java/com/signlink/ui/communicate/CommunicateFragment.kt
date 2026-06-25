@@ -21,6 +21,7 @@ class CommunicateFragment : Fragment(R.layout.fragment_communicate) {
     
     private lateinit var allPhrases: List<Symbol>
     private lateinit var symbolAdapter: SymbolAdapter
+    private var searchQuery: String = ""
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -132,18 +133,36 @@ class CommunicateFragment : Fragment(R.layout.fragment_communicate) {
     private fun setupCategoryListeners() {
         binding.chipGroupCategories.setOnCheckedStateChangeListener { _, checkedIds ->
             val selectedId = checkedIds.firstOrNull() ?: R.id.chip_all
-            
-            val filteredList = when (selectedId) {
-                R.id.chip_social -> allPhrases.filter { it.category == "Social" }
-                R.id.chip_needs -> allPhrases.filter { it.category == "Vida Cotidiana" }
-                R.id.chip_permiso -> allPhrases.filter { it.category == "Permisos" }
-                R.id.chip_health -> allPhrases.filter { it.category == "Salud" }
-                R.id.chip_questions -> allPhrases.filter { it.category == "Preguntas" }
-                else -> allPhrases
-            }
-            
-            symbolAdapter.submitList(filteredList)
+            filterPhrases(selectedId)
         }
+
+        binding.etSearch.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                searchQuery = s?.toString() ?: ""
+                val selectedId = binding.chipGroupCategories.checkedChipIds.firstOrNull() ?: R.id.chip_all
+                filterPhrases(selectedId)
+            }
+            override fun afterTextChanged(s: android.text.Editable?) {}
+        })
+    }
+
+    private fun filterPhrases(selectedId: Int) {
+        val filteredList = allPhrases.filter { symbol ->
+            val matchesCategory = when (selectedId) {
+                R.id.chip_social -> symbol.category == "Social"
+                R.id.chip_needs -> symbol.category == "Vida Cotidiana"
+                R.id.chip_permiso -> symbol.category == "Permisos"
+                R.id.chip_health -> symbol.category == "Salud"
+                R.id.chip_questions -> symbol.category == "Preguntas"
+                else -> true
+            }
+            val matchesSearch = symbol.name.contains(searchQuery, ignoreCase = true) ||
+                    symbol.textToSpeak.contains(searchQuery, ignoreCase = true)
+
+            matchesCategory && matchesSearch
+        }
+        symbolAdapter.submitList(filteredList)
     }
 
     private fun speak(text: String) {

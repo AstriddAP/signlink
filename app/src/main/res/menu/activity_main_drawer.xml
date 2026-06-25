@@ -20,6 +20,10 @@
             android:id="@+id/nav_dictionary"
             android:icon="@drawable/ic_book"
             android:title="@string/visual_dictionary_title" />
+        <item
+            android:id="@+id/nav_contacts"
+            android:icon="@drawable/ic_people"
+            android:title="@string/menu_contacts" />
     </group>
 
     <item android:title="@string/menu_others">

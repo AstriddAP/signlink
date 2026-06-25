@@ -89,7 +89,17 @@ class AuthViewModel @Inject constructor(
         if (user != null) {
             viewModelScope.launch {
                 userRepository.getUserProfile(user.uid).onSuccess { profile ->
-                    _userProfile.value = profile
+                    if (profile == null) {
+                        val newUser = com.signlink.data.model.User(
+                            uid = user.uid,
+                            email = user.email ?: "",
+                            displayName = user.displayName ?: user.email?.substringBefore("@") ?: "Usuario"
+                        )
+                        userRepository.saveUserProfile(newUser)
+                        _userProfile.value = newUser
+                    } else {
+                        _userProfile.value = profile
+                    }
                 }
             }
         }
@@ -107,6 +117,13 @@ class AuthViewModel @Inject constructor(
         val uid = authRepository.currentUser?.uid ?: return
         viewModelScope.launch {
             userRepository.updateProfileType(uid, profileType)
+        }
+    }
+
+    fun updateFcmToken(token: String) {
+        val uid = authRepository.currentUser?.uid ?: return
+        viewModelScope.launch {
+            userRepository.updateFcmToken(uid, token)
         }
     }
 

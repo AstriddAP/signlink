@@ -19,6 +19,7 @@ import com.signlink.R
 import com.signlink.databinding.ActivityMainBinding
 import com.signlink.ui.onboarding.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -26,6 +27,20 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var appBarConfiguration: AppBarConfiguration
     private val authViewModel: AuthViewModel by viewModels()
+    private var notificationListener: com.google.firebase.firestore.ListenerRegistration? = null
+
+    @Inject
+    lateinit var userRepository: com.signlink.data.repository.UserRepository
+
+    private val requestNotificationPermissionLauncher = registerForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            fetchAndSaveFcmToken()
+        } else {
+            Log.d("NOTIFICATIONS", "Notification permission denied")
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Cargar y aplicar de inmediato el modo oscuro guardado antes de inflar layouts
@@ -64,7 +79,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_home, R.id.nav_communicate,
                 R.id.nav_live_captioning, R.id.nav_settings,
                 R.id.nav_ai_explanation, R.id.nav_audio_transcription,
-                R.id.nav_dictionary
+                R.id.nav_dictionary, R.id.nav_contacts
             ), binding.drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
@@ -89,20 +104,23 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             authViewModel.userProfile.collectLatest { user ->
+                val firebaseUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
                 if (user != null) {
                     navName.text = if (user.displayName.isNotEmpty()) user.displayName else user.email.substringBefore("@")
                     navEmail.text = user.email
+                    checkNotificationPermission()
+                    startNotificationService()
+                } else if (firebaseUser != null) {
+                    val name = firebaseUser.displayName
+                    val email = firebaseUser.email
+                    navName.text = if (!name.isNullOrEmpty()) name else email?.substringBefore("@") ?: "Usuario"
+                    navEmail.text = email ?: ""
+                    checkNotificationPermission()
+                    startNotificationService()
                 } else {
-                    val firebaseUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
-                    if (firebaseUser != null) {
-                        val name = firebaseUser.displayName
-                        val email = firebaseUser.email
-                        navName.text = if (!name.isNullOrEmpty()) name else email?.substringBefore("@") ?: "Usuario"
-                        navEmail.text = email ?: ""
-                    } else {
-                        navName.text = "SignLink User"
-                        navEmail.text = "user@signlink.com"
-                    }
+                    stopNotificationService()
+                    navName.text = "SignLink User"
+                    navEmail.text = "user@signlink.com"
                 }
             }
         }
@@ -197,5 +215,134 @@ class MainActivity : AppCompatActivity() {
             .findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
         val navController = navHostFragment.navController
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+    }
+
+    private fun checkNotificationPermission() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            if (androidx.core.content.ContextCompat.checkSelfPermission(
+                    this,
+                    android.Manifest.permission.POST_NOTIFICATIONS
+                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            ) {
+                fetchAndSaveFcmToken()
+            } else {
+                requestNotificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            }
+        } else {
+            fetchAndSaveFcmToken()
+        }
+    }
+
+    private fun fetchAndSaveFcmToken() {
+        com.google.firebase.messaging.FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w("FCM_TOKEN", "Fetching FCM registration token failed", task.exception)
+                return@addOnCompleteListener
+            }
+            val token = task.result
+            Log.d("FCM_TOKEN", "Token actual de FCM: $token")
+            authViewModel.updateFcmToken(token)
+        }
+    }
+
+    private fun startFirestoreNotificationListener(uid: String) {
+        stopFirestoreNotificationListener()
+        
+        val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+        notificationListener = db.collection("users").document(uid)
+            .collection("notifications")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    Log.e("FIRESTORE_NOTIF", "Error al escuchar notificaciones", error)
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null) {
+                    for (change in snapshot.documentChanges) {
+                        if (change.type == com.google.firebase.firestore.DocumentChange.Type.ADDED) {
+                            val doc = change.document
+                            val type = doc.getString("type")
+                            if (type == "MUTUAL_CONTACT_ADD") {
+                                val contactUid = doc.getString("uid") ?: ""
+                                val contactName = doc.getString("displayName") ?: ""
+                                val contactEmail = doc.getString("email") ?: ""
+                                if (contactUid.isNotEmpty()) {
+                                    val newContact = com.signlink.data.model.User(
+                                        uid = contactUid,
+                                        displayName = contactName,
+                                        email = contactEmail
+                                    )
+                                    lifecycleScope.launch {
+                                        userRepository.addContact(uid, newContact)
+                                    }
+                                }
+                            }
+                            
+                            val title = doc.getString("title") ?: "Nuevo mensaje"
+                            val body = doc.getString("body") ?: ""
+                            
+                            triggerLocalNotification(title, body)
+                            
+                            // Borramos el registro procesado para evitar notificaciones repetidas
+                            db.collection("users").document(uid)
+                                .collection("notifications")
+                                .document(doc.id)
+                                .delete()
+                        }
+                    }
+                }
+            }
+    }
+
+    private fun stopFirestoreNotificationListener() {
+        notificationListener?.remove()
+        notificationListener = null
+    }
+
+    private fun triggerLocalNotification(title: String, messageBody: String) {
+        val intent = android.content.Intent(this, MainActivity::class.java).apply {
+            addFlags(android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        }
+        val pendingIntent = android.app.PendingIntent.getActivity(
+            this, 0, intent,
+            android.app.PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val channelId = "signlink_notifications"
+        val notificationBuilder = androidx.core.app.NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(R.drawable.ic_notifications)
+            .setContentTitle(title)
+            .setContentText(messageBody)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .setPriority(androidx.core.app.NotificationCompat.PRIORITY_HIGH)
+            .setDefaults(androidx.core.app.NotificationCompat.DEFAULT_ALL)
+
+        val notificationManager = getSystemService(android.content.Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            val channel = android.app.NotificationChannel(
+                channelId,
+                "Alertas de SignLink",
+                android.app.NotificationManager.IMPORTANCE_HIGH
+            )
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        notificationManager.notify(System.currentTimeMillis().toInt(), notificationBuilder.build())
+    }
+
+    private fun startNotificationService() {
+        val serviceIntent = android.content.Intent(this, com.signlink.data.remote.NotificationService::class.java)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent)
+        } else {
+            startService(serviceIntent)
+        }
+    }
+
+    private fun stopNotificationService() {
+        val serviceIntent = android.content.Intent(this, com.signlink.data.remote.NotificationService::class.java)
+        stopService(serviceIntent)
     }
 }

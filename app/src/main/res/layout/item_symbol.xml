@@ -23,11 +23,14 @@
 
         <TextView
             android:id="@+id/symbol_name"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="Símbolo"
             android:textAlignment="center"
+            android:gravity="center"
+            android:textSize="14sp"
+            android:textColor="?attr/colorOnSurface"
             android:textStyle="bold" />
 
     </LinearLayout>
