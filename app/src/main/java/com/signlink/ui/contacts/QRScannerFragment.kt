@@ -172,6 +172,22 @@ class QRScannerFragment : Fragment() {
                             .document(notificationId)
                             .set(notificationData)
                             .await()
+
+                        // Obtener el fcmToken del contacto para enviarle un push directo
+                        val contactDoc = db.collection("users").document(contact.uid).get().await()
+                        val fcmToken = contactDoc.getString("fcmToken") ?: ""
+                        if (fcmToken.isNotEmpty()) {
+                            val fcmPayload = mapOf(
+                                "notificationId" to notificationId,
+                                "type" to "MUTUAL_CONTACT_ADD",
+                                "uid" to currentUserModel.uid,
+                                "displayName" to currentUserModel.displayName,
+                                "email" to currentUserModel.email,
+                                "title" to "Contacto agregado",
+                                "body" to "${currentUserModel.displayName} te ha agregado como contacto"
+                            )
+                            com.signlink.data.remote.FcmSender.sendNotification(fcmToken, fcmPayload)
+                        }
                     } catch (e: Exception) {
                         Log.e("QRScanner", "Error al enviar notificación de contacto mutuo", e)
                     }

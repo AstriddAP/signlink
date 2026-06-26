@@ -3,10 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="12dp"
+    android:layout_marginHorizontal="4dp"
     android:layout_marginVertical="6dp"
+    android:clickable="true"
+    android:focusable="true"
     app:cardCornerRadius="16dp"
-    app:cardElevation="2dp"
+    app:cardElevation="1dp"
     app:cardBackgroundColor="?attr/colorSurface"
     app:strokeColor="?attr/colorSurfaceVariant"
     app:strokeWidth="1dp">
@@ -24,16 +26,16 @@
             android:layout_height="48dp"
             app:cardCornerRadius="24dp"
             app:cardElevation="0dp"
-            app:cardBackgroundColor="?attr/colorPrimaryContainer"
+            app:cardBackgroundColor="@color/card_blue_light"
             app:strokeWidth="0dp">
 
             <TextView
-                android:id="@+id/tv_avatar_letter"
+                android:id="@+id/tv_chat_avatar_letter"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:textColor="?attr/colorOnPrimaryContainer"
-                android:textSize="20sp"
+                android:textColor="@color/primary"
+                android:textSize="18sp"
                 android:textStyle="bold"
                 android:text="U" />
         </com.google.android.material.card.MaterialCardView>
@@ -48,7 +50,7 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/tv_contact_name"
+                android:id="@+id/tv_chat_contact_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="?attr/colorOnSurface"
@@ -56,10 +58,10 @@
                 android:textStyle="bold"
                 android:maxLines="1"
                 android:ellipsize="end"
-                android:text="Nombre" />
+                android:text="Contacto" />
 
             <TextView
-                android:id="@+id/tv_contact_last_message"
+                android:id="@+id/tv_chat_last_message"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
@@ -67,7 +69,7 @@
                 android:textSize="14sp"
                 android:maxLines="1"
                 android:ellipsize="end"
-                android:text="correo@mail.com" />
+                android:text="Último mensaje..." />
         </LinearLayout>
 
         <!-- Columna derecha: Hora e Indicadores de Estado -->
@@ -78,12 +80,12 @@
             android:gravity="end">
 
             <TextView
-                android:id="@+id/tv_contact_timestamp"
+                android:id="@+id/tv_chat_timestamp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="12sp"
-                android:text="" />
+                android:text="12:00 PM" />
 
             <!-- Contenedor para badge de no leído o checkmarks de leído -->
             <FrameLayout
@@ -91,7 +93,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp">
 
-                <!-- Badge verde de no leído -->
+                <!-- Badge verde de no leído (como en WhatsApp) -->
                 <TextView
                     android:id="@+id/tv_unread_badge"
                     android:layout_width="20dp"
@@ -101,12 +103,12 @@
                     android:textColor="@color/white"
                     android:textSize="11sp"
                     android:textStyle="bold"
-                    android:text="0"
+                    android:text="1"
                     android:visibility="gone" />
 
-                <!-- Check de enviado/leído -->
+                <!-- Check de enviado/leído (si el último mensaje es nuestro) -->
                 <ImageView
-                    android:id="@+id/iv_contact_status_ticks"
+                    android:id="@+id/iv_chat_status_ticks"
                     android:layout_width="18dp"
                     android:layout_height="18dp"
                     android:src="@drawable/ic_check"

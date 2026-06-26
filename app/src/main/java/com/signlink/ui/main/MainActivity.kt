@@ -32,13 +32,19 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var userRepository: com.signlink.data.repository.UserRepository
 
-    private val requestNotificationPermissionLauncher = registerForActivityResult(
-        androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            fetchAndSaveFcmToken()
+    private val requestPermissionsLauncher = registerForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        permissions.entries.forEach {
+            Log.d("PERMISSIONS", "${it.key} = ${it.value}")
+        }
+        val postNotificationsGranted = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            permissions[android.Manifest.permission.POST_NOTIFICATIONS] == true
         } else {
-            Log.d("NOTIFICATIONS", "Notification permission denied")
+            true
+        }
+        if (postNotificationsGranted) {
+            fetchAndSaveFcmToken()
         }
     }
 
@@ -108,17 +114,17 @@ class MainActivity : AppCompatActivity() {
                 if (user != null) {
                     navName.text = if (user.displayName.isNotEmpty()) user.displayName else user.email.substringBefore("@")
                     navEmail.text = user.email
-                    checkNotificationPermission()
-                    startNotificationService()
+                    checkAndRequestAllPermissions()
+                    startFirestoreNotificationListener(user.uid)
                 } else if (firebaseUser != null) {
                     val name = firebaseUser.displayName
                     val email = firebaseUser.email
                     navName.text = if (!name.isNullOrEmpty()) name else email?.substringBefore("@") ?: "Usuario"
                     navEmail.text = email ?: ""
-                    checkNotificationPermission()
-                    startNotificationService()
+                    checkAndRequestAllPermissions()
+                    startFirestoreNotificationListener(firebaseUser.uid)
                 } else {
-                    stopNotificationService()
+                    stopFirestoreNotificationListener()
                     navName.text = "SignLink User"
                     navEmail.text = "user@signlink.com"
                 }
@@ -186,6 +192,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         handleSharedAudio(navController)
+        handleNotificationIntent(navController)
     }
 
     override fun onNewIntent(intent: android.content.Intent) {
@@ -195,6 +202,7 @@ class MainActivity : AppCompatActivity() {
             .findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
         val navController = navHostFragment.navController
         handleSharedAudio(navController)
+        handleNotificationIntent(navController)
     }
 
     private fun handleSharedAudio(navController: androidx.navigation.NavController) {
@@ -210,6 +218,35 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun handleNotificationIntent(navController: androidx.navigation.NavController) {
+        val navigateTo = intent?.getStringExtra("navigate_to")
+        if (navigateTo == "chat") {
+            val contactUid = intent?.getStringExtra("contact_uid") ?: ""
+            val contactName = intent?.getStringExtra("contact_name") ?: "Contacto"
+            if (contactUid.isNotEmpty()) {
+                val bundle = Bundle().apply {
+                    putString("contact_uid", contactUid)
+                    putString("contact_name", contactName)
+                }
+                
+                // Si el usuario está autenticado, navega directamente.
+                val currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+                if (currentUser != null) {
+                    try {
+                        navController.navigate(R.id.nav_chat, bundle)
+                    } catch (e: Exception) {
+                        Log.e("MainActivity", "Error al navegar al chat desde notificación", e)
+                    }
+                }
+                
+                // Limpiar extras para evitar re-navegación en recreaciones de la Activity
+                intent?.removeExtra("navigate_to")
+                intent?.removeExtra("contact_uid")
+                intent?.removeExtra("contact_name")
+            }
+        }
+    }
+
     override fun onSupportNavigateUp(): Boolean {
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
@@ -217,17 +254,47 @@ class MainActivity : AppCompatActivity() {
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 
-    private fun checkNotificationPermission() {
+    private fun checkAndRequestAllPermissions() {
+        val permissionsToRequest = mutableListOf<String>()
+
+        val hasFineLocation = androidx.core.content.ContextCompat.checkSelfPermission(
+            this, android.Manifest.permission.ACCESS_FINE_LOCATION
+        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+
+        val hasCoarseLocation = androidx.core.content.ContextCompat.checkSelfPermission(
+            this, android.Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+
+        val hasCamera = androidx.core.content.ContextCompat.checkSelfPermission(
+            this, android.Manifest.permission.CAMERA
+        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+
+        val hasAudio = androidx.core.content.ContextCompat.checkSelfPermission(
+            this, android.Manifest.permission.RECORD_AUDIO
+        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+
+        if (!hasFineLocation || !hasCoarseLocation) {
+            permissionsToRequest.add(android.Manifest.permission.ACCESS_FINE_LOCATION)
+            permissionsToRequest.add(android.Manifest.permission.ACCESS_COARSE_LOCATION)
+        }
+        if (!hasCamera) {
+            permissionsToRequest.add(android.Manifest.permission.CAMERA)
+        }
+        if (!hasAudio) {
+            permissionsToRequest.add(android.Manifest.permission.RECORD_AUDIO)
+        }
+
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            if (androidx.core.content.ContextCompat.checkSelfPermission(
-                    this,
-                    android.Manifest.permission.POST_NOTIFICATIONS
-                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-            ) {
-                fetchAndSaveFcmToken()
-            } else {
-                requestNotificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            val hasNotifications = androidx.core.content.ContextCompat.checkSelfPermission(
+                this, android.Manifest.permission.POST_NOTIFICATIONS
+            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            if (!hasNotifications) {
+                permissionsToRequest.add(android.Manifest.permission.POST_NOTIFICATIONS)
             }
+        }
+
+        if (permissionsToRequest.isNotEmpty()) {
+            requestPermissionsLauncher.launch(permissionsToRequest.toTypedArray())
         } else {
             fetchAndSaveFcmToken()
         }
@@ -262,6 +329,8 @@ class MainActivity : AppCompatActivity() {
                         if (change.type == com.google.firebase.firestore.DocumentChange.Type.ADDED) {
                             val doc = change.document
                             val type = doc.getString("type")
+                            val chatId = doc.getString("chatId") ?: ""
+                            
                             if (type == "MUTUAL_CONTACT_ADD") {
                                 val contactUid = doc.getString("uid") ?: ""
                                 val contactName = doc.getString("displayName") ?: ""
@@ -281,7 +350,24 @@ class MainActivity : AppCompatActivity() {
                             val title = doc.getString("title") ?: "Nuevo mensaje"
                             val body = doc.getString("body") ?: ""
                             
-                            triggerLocalNotification(title, body)
+                            val senderId = doc.getString("senderId") ?: ""
+                            val senderName = doc.getString("senderName") ?: "Contacto"
+                            
+                            // Si es un mensaje de chat, verificamos si es del chat que el usuario tiene abierto actualmente
+                            if (type == "CHAT_MESSAGE" && chatId.isNotEmpty() && chatId == com.signlink.ui.contacts.ChatFragment.activeChatId) {
+                                Log.d("MainActivity", "El usuario ya está en el chat activo ($chatId). Se omite el banner de notificación local.")
+                            } else {
+                                val navigateTo = if (type == "CHAT_MESSAGE" || type == "MUTUAL_CONTACT_ADD") "chat" else null
+                                val navUid = if (type == "MUTUAL_CONTACT_ADD") (doc.getString("uid") ?: "") else senderId
+                                val navName = if (type == "MUTUAL_CONTACT_ADD") (doc.getString("displayName") ?: "") else senderName
+                                triggerLocalNotification(
+                                    title = title, 
+                                    messageBody = body, 
+                                    navigateTo = navigateTo, 
+                                    contactUid = navUid, 
+                                    contactName = navName
+                                )
+                            }
                             
                             // Borramos el registro procesado para evitar notificaciones repetidas
                             db.collection("users").document(uid)
@@ -299,13 +385,24 @@ class MainActivity : AppCompatActivity() {
         notificationListener = null
     }
 
-    private fun triggerLocalNotification(title: String, messageBody: String) {
+    private fun triggerLocalNotification(
+        title: String, 
+        messageBody: String, 
+        navigateTo: String? = null, 
+        contactUid: String? = null, 
+        contactName: String? = null
+    ) {
         val intent = android.content.Intent(this, MainActivity::class.java).apply {
             addFlags(android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            if (navigateTo != null) {
+                putExtra("navigate_to", navigateTo)
+                putExtra("contact_uid", contactUid)
+                putExtra("contact_name", contactName)
+            }
         }
         val pendingIntent = android.app.PendingIntent.getActivity(
-            this, 0, intent,
-            android.app.PendingIntent.FLAG_IMMUTABLE
+            this, System.currentTimeMillis().toInt(), intent,
+            android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT
         )
 
         val channelId = "signlink_notifications"
@@ -332,17 +429,4 @@ class MainActivity : AppCompatActivity() {
         notificationManager.notify(System.currentTimeMillis().toInt(), notificationBuilder.build())
     }
 
-    private fun startNotificationService() {
-        val serviceIntent = android.content.Intent(this, com.signlink.data.remote.NotificationService::class.java)
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            startForegroundService(serviceIntent)
-        } else {
-            startService(serviceIntent)
-        }
-    }
-
-    private fun stopNotificationService() {
-        val serviceIntent = android.content.Intent(this, com.signlink.data.remote.NotificationService::class.java)
-        stopService(serviceIntent)
-    }
 }

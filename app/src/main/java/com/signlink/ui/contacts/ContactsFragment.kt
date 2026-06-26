@@ -14,7 +14,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
+import android.util.Log
 import com.signlink.R
+import com.signlink.data.model.RecentChat
 import com.signlink.data.model.User
 import com.signlink.data.repository.UserRepository
 import com.signlink.databinding.FragmentContactsBinding
@@ -28,6 +30,8 @@ class ContactsFragment : Fragment(R.layout.fragment_contacts) {
     private var _binding: FragmentContactsBinding? = null
     private val binding get() = _binding!!
     private var contactsListener: ListenerRegistration? = null
+    private val activeChatListeners = mutableMapOf<String, List<ListenerRegistration>>()
+    private val recentChatsMap = mutableMapOf<String, RecentChat>()
 
     @Inject
     lateinit var userRepository: UserRepository
@@ -73,10 +77,18 @@ class ContactsFragment : Fragment(R.layout.fragment_contacts) {
 
     private fun startObservingContacts() {
         val currentUser = FirebaseAuth.getInstance().currentUser ?: return
-        contactsListener?.remove()
-        
+        val currentUserId = currentUser.uid
         val db = FirebaseFirestore.getInstance()
-        contactsListener = db.collection("users").document(currentUser.uid)
+
+        contactsListener?.remove()
+        contactsListener = null
+        activeChatListeners.values.forEach { list ->
+            list.forEach { it.remove() }
+        }
+        activeChatListeners.clear()
+        recentChatsMap.clear()
+
+        contactsListener = db.collection("users").document(currentUserId)
             .collection("contacts")
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
@@ -86,16 +98,114 @@ class ContactsFragment : Fragment(R.layout.fragment_contacts) {
 
                 if (snapshot != null) {
                     val contacts = snapshot.toObjects(User::class.java)
+                    
                     if (contacts.isEmpty()) {
-                        binding.tvEmptyState.visibility = View.VISIBLE
-                        binding.rvContacts.visibility = View.GONE
-                    } else {
-                        binding.tvEmptyState.visibility = View.GONE
-                        binding.rvContacts.visibility = View.VISIBLE
-                        contactAdapter.submitList(contacts)
+                        recentChatsMap.clear()
+                        updateContactsListUI()
+                        return@addSnapshotListener
                     }
+
+                    // Remover chats de contactos eliminados del mapa local
+                    val currentContactUids = contacts.map { it.uid }.toSet()
+                    val uidsToRemove = recentChatsMap.keys.filterNot { currentContactUids.contains(it) }
+                    uidsToRemove.forEach { uid ->
+                        stopChatListenersForContact(uid)
+                        recentChatsMap.remove(uid)
+                    }
+
+                    contacts.forEach { contact ->
+                        val chatId = if (currentUserId < contact.uid) {
+                            "${currentUserId}_${contact.uid}"
+                        } else {
+                            "${contact.uid}_${currentUserId}"
+                        }
+
+                        stopChatListenersForContact(contact.uid)
+                        val listenersList = mutableListOf<ListenerRegistration>()
+
+                        // 1. Escuchar el último mensaje
+                        val lastMsgListener = db.collection("chats").document(chatId)
+                            .collection("messages")
+                            .orderBy("timestamp", com.google.firebase.firestore.Query.Direction.DESCENDING)
+                            .limit(1)
+                            .addSnapshotListener { msgSnapshot, msgError ->
+                                if (msgError != null) return@addSnapshotListener
+
+                                val lastMsg = if (msgSnapshot != null && !msgSnapshot.isEmpty) {
+                                    msgSnapshot.documents.first().toObject(com.signlink.data.model.Message::class.java)
+                                } else {
+                                    null
+                                }
+
+                                val current = recentChatsMap[contact.uid]
+                                recentChatsMap[contact.uid] = RecentChat(
+                                    contact = contact,
+                                    lastMessage = lastMsg,
+                                    unreadCount = current?.unreadCount ?: 0
+                                )
+                                updateContactsListUI()
+                            }
+
+                        if (lastMsgListener != null) {
+                            listenersList.add(lastMsgListener)
+                        }
+
+                        // 2. Escuchar mensajes no leídos
+                        val unreadListener = db.collection("chats").document(chatId)
+                            .collection("messages")
+                            .whereEqualTo("seen", false)
+                            .addSnapshotListener { unreadSnapshot, unreadError ->
+                                if (unreadError != null) return@addSnapshotListener
+
+                                val unreadCount = if (unreadSnapshot != null) {
+                                    unreadSnapshot.documents.count { doc ->
+                                        val senderId = doc.getString("senderId") ?: ""
+                                        senderId != currentUserId
+                                    }
+                                } else {
+                                    0
+                                }
+
+                                val current = recentChatsMap[contact.uid]
+                                recentChatsMap[contact.uid] = RecentChat(
+                                    contact = contact,
+                                    lastMessage = current?.lastMessage,
+                                    unreadCount = unreadCount
+                                )
+                                updateContactsListUI()
+                            }
+
+                        if (unreadListener != null) {
+                            listenersList.add(unreadListener)
+                        }
+
+                        activeChatListeners[contact.uid] = listenersList
+                    }
+                    updateContactsListUI()
                 }
             }
+    }
+
+    private fun stopChatListenersForContact(contactUid: String) {
+        activeChatListeners[contactUid]?.forEach { it.remove() }
+        activeChatListeners.remove(contactUid)
+    }
+
+    private fun updateContactsListUI() {
+        val binding = _binding ?: return
+        
+        val sortedList = recentChatsMap.values.toList().sortedWith { c1, c2 ->
+            c1.contact.displayName.compareTo(c2.contact.displayName, ignoreCase = true)
+        }
+
+        if (sortedList.isEmpty()) {
+            binding.tvEmptyState.visibility = View.VISIBLE
+            binding.rvContacts.visibility = View.GONE
+        } else {
+            binding.tvEmptyState.visibility = View.GONE
+            binding.rvContacts.visibility = View.VISIBLE
+            contactAdapter.submitList(sortedList)
+        }
     }
 
 
@@ -131,6 +241,10 @@ class ContactsFragment : Fragment(R.layout.fragment_contacts) {
     override fun onDestroyView() {
         contactsListener?.remove()
         contactsListener = null
+        activeChatListeners.values.forEach { list ->
+            list.forEach { it.remove() }
+        }
+        activeChatListeners.clear()
         super.onDestroyView()
         _binding = null
     }
@@ -139,38 +253,86 @@ class ContactsFragment : Fragment(R.layout.fragment_contacts) {
 class ContactAdapter(
     private val onContactClick: (User) -> Unit,
     private val onContactLongClick: (User) -> Unit
-) : androidx.recyclerview.widget.ListAdapter<User, ContactAdapter.ContactViewHolder>(UserDiffCallback()) {
-
+) : androidx.recyclerview.widget.ListAdapter<RecentChat, ContactAdapter.ContactViewHolder>(RecentChatDiffCallback()) {
+ 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ContactViewHolder {
         val view = android.view.LayoutInflater.from(parent.context)
             .inflate(R.layout.item_contact, parent, false)
         return ContactViewHolder(view)
     }
-
+ 
     override fun onBindViewHolder(holder: ContactViewHolder, position: Int) {
         holder.bind(getItem(position))
     }
-
+ 
     inner class ContactViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val tvLetter = itemView.findViewById<TextView>(R.id.tv_avatar_letter)
         private val tvName = itemView.findViewById<TextView>(R.id.tv_contact_name)
-        private val tvEmail = itemView.findViewById<TextView>(R.id.tv_contact_email)
-
-        fun bind(user: User) {
-            tvName.text = user.displayName
-            tvEmail.text = user.email
-            val initial = if (user.displayName.isNotEmpty()) user.displayName.take(1).uppercase() else "U"
+        private val tvLastMsg = itemView.findViewById<TextView>(R.id.tv_contact_last_message)
+        private val tvTime = itemView.findViewById<TextView>(R.id.tv_contact_timestamp)
+        private val tvUnread = itemView.findViewById<TextView>(R.id.tv_unread_badge)
+        private val ivTicks = itemView.findViewById<android.widget.ImageView>(R.id.iv_contact_status_ticks)
+ 
+        fun bind(recentChat: RecentChat) {
+            val contact = recentChat.contact
+            val lastMsg = recentChat.lastMessage
+            val unreadCount = recentChat.unreadCount
+ 
+            tvName.text = contact.displayName
+            val initial = if (contact.displayName.isNotEmpty()) contact.displayName.take(1).uppercase() else "U"
             tvLetter.text = initial
-            itemView.setOnClickListener { onContactClick(user) }
+ 
+            if (lastMsg != null) {
+                tvLastMsg.text = lastMsg.text
+                
+                val date = lastMsg.timestamp?.toDate()
+                if (date != null) {
+                    val sdf = java.text.SimpleDateFormat("hh:mm a", java.util.Locale.getDefault())
+                    tvTime.text = sdf.format(date)
+                } else {
+                    tvTime.text = ""
+                }
+ 
+                val currentUserId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
+                if (lastMsg.senderId == currentUserId) {
+                    tvUnread.visibility = View.GONE
+                    ivTicks.visibility = View.VISIBLE
+                    if (lastMsg.seen) {
+                        ivTicks.setImageResource(R.drawable.ic_check_double)
+                        ivTicks.setColorFilter(android.graphics.Color.parseColor("#34B7F1"))
+                    } else {
+                        ivTicks.setImageResource(R.drawable.ic_check)
+                        ivTicks.setColorFilter(android.graphics.Color.GRAY)
+                    }
+                } else {
+                    ivTicks.visibility = View.GONE
+                    if (unreadCount > 0) {
+                        tvUnread.text = unreadCount.toString()
+                        tvUnread.visibility = View.VISIBLE
+                    } else {
+                        tvUnread.visibility = View.GONE
+                    }
+                }
+            } else {
+                tvLastMsg.text = contact.email
+                tvTime.text = ""
+                tvUnread.visibility = View.GONE
+                ivTicks.visibility = View.GONE
+            }
+ 
+            itemView.setOnClickListener { onContactClick(contact) }
             itemView.setOnLongClickListener {
-                onContactLongClick(user)
+                onContactLongClick(contact)
                 true
             }
         }
     }
-
-    class UserDiffCallback : androidx.recyclerview.widget.DiffUtil.ItemCallback<User>() {
-        override fun areItemsTheSame(oldItem: User, newItem: User): Boolean = oldItem.uid == newItem.uid
-        override fun areContentsTheSame(oldItem: User, newItem: User): Boolean = oldItem == newItem
+ 
+    class RecentChatDiffCallback : androidx.recyclerview.widget.DiffUtil.ItemCallback<RecentChat>() {
+        override fun areItemsTheSame(oldItem: RecentChat, newItem: RecentChat): Boolean =
+            oldItem.contact.uid == newItem.contact.uid
+ 
+        override fun areContentsTheSame(oldItem: RecentChat, newItem: RecentChat): Boolean =
+            oldItem == newItem
     }
 }

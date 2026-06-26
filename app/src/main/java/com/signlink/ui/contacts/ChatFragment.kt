@@ -17,7 +17,11 @@ import com.google.firebase.firestore.Query
 import com.signlink.R
 import com.signlink.data.model.Message
 import com.signlink.databinding.FragmentChatBinding
+import android.util.Log
+import androidx.lifecycle.lifecycleScope
+import com.signlink.data.remote.FcmSender
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import java.util.UUID
 
 @AndroidEntryPoint
@@ -33,6 +37,7 @@ class ChatFragment : Fragment() {
     private var currentUserName: String = ""
     private var contactUid: String = ""
     private var contactName: String = ""
+    private var messagesListener: com.google.firebase.firestore.ListenerRegistration? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -72,6 +77,8 @@ class ChatFragment : Fragment() {
             "${contactUid}_${currentUserId}"
         }
 
+        activeChatId = chatId
+
         setupRecyclerView()
         listenForMessages()
         setupListeners()
@@ -88,10 +95,11 @@ class ChatFragment : Fragment() {
     }
 
     private fun listenForMessages() {
-        db.collection("chats").document(chatId)
+        messagesListener = db.collection("chats").document(chatId)
             .collection("messages")
             .orderBy("timestamp", Query.Direction.ASCENDING)
             .addSnapshotListener { snapshot, error ->
+                val binding = _binding ?: return@addSnapshotListener
                 if (error != null) {
                     Toast.makeText(context, "Error al escuchar mensajes: ${error.message}", Toast.LENGTH_SHORT).show()
                     return@addSnapshotListener
@@ -102,8 +110,42 @@ class ChatFragment : Fragment() {
                     messageAdapter.submitList(messages)
                     if (messages.isNotEmpty()) {
                         binding.rvMessages.smoothScrollToPosition(messages.size - 1)
+                        
+                        // Si hay mensajes no leídos del otro usuario, marcarlos como leídos
+                        val hasUnread = messages.any { it.senderId != currentUserId && !it.seen }
+                        if (hasUnread) {
+                            markMessagesAsRead()
+                        }
                     }
                 }
+            }
+    }
+
+    private fun markMessagesAsRead() {
+        db.collection("chats").document(chatId)
+            .collection("messages")
+            .whereEqualTo("seen", false)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                if (snapshot != null && _binding != null) {
+                    val batch = db.batch()
+                    var hasUpdates = false
+                    for (doc in snapshot.documents) {
+                        val senderId = doc.getString("senderId") ?: ""
+                        if (senderId != currentUserId) {
+                            batch.update(doc.reference, "seen", true)
+                            hasUpdates = true
+                        }
+                    }
+                    if (hasUpdates) {
+                        batch.commit().addOnFailureListener { e ->
+                            Log.e("ChatFragment", "Error al marcar mensajes como leídos", e)
+                        }
+                    }
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("ChatFragment", "Error consultando mensajes no leídos", e)
             }
     }
 
@@ -146,13 +188,41 @@ class ChatFragment : Fragment() {
         val notificationData = mapOf(
             "title" to "Nuevo mensaje de $currentUserName",
             "body" to text,
-            "timestamp" to Timestamp.now()
+            "timestamp" to Timestamp.now(),
+            "chatId" to chatId,
+            "senderId" to currentUserId,
+            "senderName" to currentUserName,
+            "type" to "CHAT_MESSAGE"
         )
 
         db.collection("users").document(contactUid)
             .collection("notifications")
             .document(messageId) // Usar el mismo ID para evitar duplicados
             .set(notificationData)
+
+        // 3. Obtener el token de FCM del destinatario y enviar notificación push en segundo plano
+        db.collection("users").document(contactUid).get()
+            .addOnSuccessListener { document ->
+                val fcmToken = document.getString("fcmToken") ?: ""
+                if (fcmToken.isNotEmpty()) {
+                    lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                        val fcmPayload = mapOf(
+                            "notificationId" to messageId,
+                            "type" to "CHAT_MESSAGE",
+                            "title" to "Nuevo mensaje de $currentUserName",
+                            "body" to text,
+                            "senderId" to currentUserId,
+                            "senderName" to currentUserName
+                        )
+                        FcmSender.sendNotification(fcmToken, fcmPayload)
+                    }
+                } else {
+                    Log.d("ChatFragment", "El destinatario no tiene un token de FCM registrado.")
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("ChatFragment", "Error al recuperar token de FCM del destinatario", e)
+            }
     }
 
     private fun showDatabaseNotFoundErrorDialog() {
@@ -166,8 +236,17 @@ class ChatFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        if (activeChatId == chatId) {
+            activeChatId = null
+        }
+        messagesListener?.remove()
+        messagesListener = null
         super.onDestroyView()
         _binding = null
+    }
+
+    companion object {
+        var activeChatId: String? = null
     }
 }
 
@@ -201,9 +280,19 @@ class MessageAdapter(
 
     class MessageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val tvText = itemView.findViewById<TextView>(R.id.tv_message_text)
+        private val ivTicks = itemView.findViewById<android.widget.ImageView>(R.id.iv_status_ticks)
 
         fun bind(message: Message) {
             tvText.text = message.text
+            if (ivTicks != null) {
+                if (message.seen) {
+                    ivTicks.setImageResource(R.drawable.ic_check_double)
+                    ivTicks.setColorFilter(android.graphics.Color.parseColor("#00E5FF"))
+                } else {
+                    ivTicks.setImageResource(R.drawable.ic_check)
+                    ivTicks.setColorFilter(android.graphics.Color.parseColor("#B0FFFFFF"))
+                }
+            }
         }
     }
 
