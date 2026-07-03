@@ -34,22 +34,57 @@ android {
 
     val mapsApiKey: String = localProperties.getProperty("MAPS_API_KEY") ?: ""
     val geminiApiKey: String = localProperties.getProperty("GEMINI_API_KEY") ?: ""
-    val dbPassphrase: String = localProperties.getProperty("DB_PASSPHRASE") ?: "clave_segura_signlink_2024"
+    val fcmServerKey: String = localProperties.getProperty("FCM_SERVER_KEY") ?: ""
+
+    val versionPropsFile = project.file("version.properties")
+    var currentVersionCode = 8
+    if (versionPropsFile.exists()) {
+        try {
+            val versionProps = Properties()
+            versionProps.load(versionPropsFile.inputStream())
+            currentVersionCode = (versionProps.getProperty("VERSION_CODE") ?: "8").toInt()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    } else {
+        try {
+            val versionProps = Properties()
+            versionProps.setProperty("VERSION_CODE", "8")
+            versionPropsFile.parentFile.mkdirs()
+            versionProps.store(versionPropsFile.outputStream(), null)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    val isRelease = gradle.startParameter.taskNames.any { 
+        it.contains("Release", ignoreCase = true) || it.contains("bundle", ignoreCase = true) 
+    }
+    if (isRelease) {
+        currentVersionCode += 1
+        try {
+            val versionProps = Properties()
+            versionProps.setProperty("VERSION_CODE", currentVersionCode.toString())
+            versionProps.store(versionPropsFile.outputStream(), null)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
 
     defaultConfig {
         applicationId = "com.talkyapp.pe"
         minSdk = 28
         targetSdk = 35
-        versionCode = 7
-        versionName = "1.6"
+        versionCode = currentVersionCode
+        versionName = "1.6.$currentVersionCode"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
 
-        buildConfigField("String", "DB_PASSPHRASE", "\"$dbPassphrase\"")
         buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
         buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
+        buildConfigField("String", "FCM_SERVER_KEY", "\"$fcmServerKey\"")
     }
 
     compileOptions {
@@ -145,12 +180,6 @@ dependencies {
 
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
-
-    implementation(libs.sqlcipher)
-
-    implementation(libs.room.runtime)
-    implementation(libs.room.ktx)
-    ksp(libs.room.compiler)
 
     implementation(libs.androidx.biometric)
     implementation(libs.androidx.security.crypto)

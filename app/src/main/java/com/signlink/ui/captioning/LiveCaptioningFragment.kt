@@ -106,7 +106,7 @@ class LiveCaptioningFragment : Fragment() {
         viewModel.stopTts()
     }
 
-    override fun onDestroyView() { 
+    override fun onDestroyView() {
         super.onDestroyView()
         viewModel.stopRecording()
         _binding = null

@@ -33,8 +33,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
     
-    private val viewModel: HomeViewModel by viewModels()
-    
     private var contactsListener: com.google.firebase.firestore.ListenerRegistration? = null
     private val activeChatListeners = mutableMapOf<String, List<com.google.firebase.firestore.ListenerRegistration>>()
     private val recentChatsMap = mutableMapOf<String, RecentChat>()
@@ -60,7 +58,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         setupClickListeners()
         setupRecentChatsRecyclerView()
         startObservingRecentChats()
-        observeViewModel()
     }
 
     private fun setupUI() {
@@ -178,9 +175,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
     }
 
-    private fun observeViewModel() {
-        // No Panic Button to observe
-    }
 
     override fun onDestroyView() {
         contactsListener?.remove()
